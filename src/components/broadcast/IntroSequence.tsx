@@ -122,14 +122,14 @@ export function IntroSequence({
               <motion.div
                 animate={{ rotate: [0, 360] }}
                 transition={{ duration: 3, ease: "linear", repeat: Infinity }}
-                className="mb-6"
+                className="mb-8"
               >
-                <Sparkles className="w-16 h-16 text-primary" />
+                <Sparkles className="w-24 h-24 text-primary" />
               </motion.div>
-              <h2 className="text-2xl md:text-3xl font-bold text-brand-sea">
+              <h2 className="text-4xl md:text-5xl font-bold text-brand-sea">
                 Weird Science
               </h2>
-              <p className="text-lg text-slate-400 mt-2">presents</p>
+              <p className="text-xl text-slate-400 mt-3">presents</p>
             </motion.div>
           )}
 
@@ -141,7 +141,7 @@ export function IntroSequence({
               exit={{ opacity: 0, y: -30 }}
               transition={{ duration: 0.6 }}
             >
-              <h1 className="text-4xl md:text-6xl font-bold gradient-brand-text mb-4">
+              <h1 className="text-5xl md:text-7xl font-bold gradient-brand-text mb-6">
                 {title || "The Debate"}
               </h1>
               <motion.div
@@ -161,8 +161,8 @@ export function IntroSequence({
               exit={{ opacity: 0 }}
               className="space-y-6"
             >
-              <h3 className="text-xl text-slate-400 mb-8">Featuring</h3>
-              <div className="flex flex-wrap justify-center gap-6">
+              <h3 className="text-2xl text-slate-400 mb-10">Featuring</h3>
+              <div className="flex flex-wrap justify-center gap-10">
                 {participants.map((participant, index) => (
                   <motion.div
                     key={participant.id}
@@ -175,7 +175,7 @@ export function IntroSequence({
                     transition={{ duration: 0.4 }}
                     className="flex flex-col items-center"
                   >
-                    <div className="w-20 h-20 rounded-full border-2 border-primary/50 overflow-hidden mb-2 bg-gradient-to-br from-primary/20 to-brand-teal/20">
+                    <div className="w-32 h-32 rounded-full border-3 border-primary/50 overflow-hidden mb-4 bg-gradient-to-br from-primary/20 to-brand-teal/20">
                       {participant.avatarUrl ? (
                         <img
                           src={participant.avatarUrl}
@@ -184,13 +184,13 @@ export function IntroSequence({
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <span className="text-2xl font-bold text-white/80">
+                          <span className="text-4xl font-bold text-white/80">
                             {participant.name?.charAt(0)?.toUpperCase() || "?"}
                           </span>
                         </div>
                       )}
                     </div>
-                    <span className="text-white font-medium">
+                    <span className="text-xl text-white font-medium">
                       {participant.name || "Participant"}
                     </span>
                   </motion.div>
@@ -207,17 +207,17 @@ export function IntroSequence({
               exit={{ opacity: 0 }}
               className="space-y-4"
             >
-              <h3 className="text-xl text-slate-400 mb-6">Topics</h3>
-              <div className="space-y-3">
+              <h3 className="text-2xl text-slate-400 mb-8">Topics</h3>
+              <div className="space-y-4">
                 {topicTitles.map((topic, index) => (
                   <motion.div
                     key={index}
                     initial={{ opacity: 0, x: 50 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.15, duration: 0.4 }}
-                    className="px-6 py-3 bg-slate-800/50 border border-white/10 rounded-lg"
+                    className="px-8 py-4 bg-slate-800/50 border border-white/10 rounded-lg"
                   >
-                    <span className="text-white">{topic}</span>
+                    <span className="text-lg text-white">{topic}</span>
                   </motion.div>
                 ))}
               </div>
