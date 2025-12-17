@@ -129,6 +129,8 @@ export interface IntroOutroConfig {
   introMusicUrl?: string;
   outroMusicFile?: File;
   outroMusicUrl?: string;
+  outroVideoFile?: File;
+  outroVideoUrl?: string;
   transitionSoundFile?: File;
   transitionSoundUrl?: string;
   introMusicVolume: number;

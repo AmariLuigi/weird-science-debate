@@ -222,6 +222,7 @@ export function AudioEnhancementsSection() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
+            className="space-y-4"
           >
             {renderAudioUpload(
               "outroMusic",
@@ -231,6 +232,52 @@ export function AudioEnhancementsSection() {
               introOutroConfig.outroMusicUrl,
               introOutroConfig.outroMusicVolume,
             )}
+
+            {/* Outro Video Upload */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Play className="w-4 h-4 text-brand-sea" />
+                <span className="text-sm font-medium text-white">Outro Host Video</span>
+              </div>
+
+              {introOutroConfig.outroVideoFile ? (
+                <div className="flex items-center gap-3 px-4 py-3 bg-slate-800/50 border border-primary/30 rounded-lg">
+                  <Play className="w-5 h-5 text-primary" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-white truncate">{introOutroConfig.outroVideoFile.name}</div>
+                    <div className="text-xs text-slate-400">Video file</div>
+                  </div>
+                  <button
+                    onClick={() => updateIntroOutroConfig({ outroVideoFile: undefined })}
+                    className="p-1 hover:bg-white/10 rounded transition-colors"
+                  >
+                    <X className="w-4 h-4 text-slate-400 hover:text-white" />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex items-center gap-3 px-4 py-3 bg-slate-800/30 border border-dashed border-slate-600 rounded-lg hover:border-primary/50 hover:bg-slate-800/50 transition-all cursor-pointer">
+                  <Upload className="w-5 h-5 text-slate-400" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-slate-400">Upload video</div>
+                    <div className="text-xs text-slate-500">MP4, WebM</div>
+                  </div>
+                  <input
+                    type="file"
+                    accept="video/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        updateIntroOutroConfig({ outroVideoFile: file });
+                      }
+                    }}
+                    className="hidden"
+                  />
+                </label>
+              )}
+              <p className="text-xs text-slate-500">
+                Host video shown in circular avatar during outro (optional)
+              </p>
+            </div>
           </motion.div>
         )}
 

@@ -411,6 +411,16 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
             : undefined;
         }
 
+        let newOutroVideoUrl = prev.introOutroConfig.outroVideoUrl;
+        if (updates.outroVideoFile !== undefined) {
+          if (prev.introOutroConfig.outroVideoUrl) {
+            URL.revokeObjectURL(prev.introOutroConfig.outroVideoUrl);
+          }
+          newOutroVideoUrl = updates.outroVideoFile
+            ? URL.createObjectURL(updates.outroVideoFile)
+            : undefined;
+        }
+
         return {
           ...prev,
           introOutroConfig: {
@@ -424,6 +434,10 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
               updates.outroMusicFile !== undefined
                 ? newOutroMusicUrl
                 : prev.introOutroConfig.outroMusicUrl,
+            outroVideoUrl:
+              updates.outroVideoFile !== undefined
+                ? newOutroVideoUrl
+                : prev.introOutroConfig.outroVideoUrl,
             transitionSoundUrl:
               updates.transitionSoundFile !== undefined
                 ? newTransitionSoundUrl

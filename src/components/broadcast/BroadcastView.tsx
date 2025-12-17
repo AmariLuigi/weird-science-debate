@@ -509,6 +509,7 @@ export function BroadcastView() {
         onBackToSetup={handleBackToSetup}
         outroMusicUrl={introOutroConfig.outroMusicUrl}
         outroMusicVolume={introOutroConfig.outroMusicVolume}
+        outroVideoUrl={introOutroConfig.outroVideoUrl}
       />
     );
   }
