@@ -39,14 +39,14 @@ export function ActiveSpeakerView({
     ? { type: "host" as const, data: host }
     : activeParticipantId
       ? {
-          type: "participant" as const,
-          data: participants.find((p) => p.id === activeParticipantId),
-        }
+        type: "participant" as const,
+        data: participants.find((p) => p.id === activeParticipantId),
+      }
       : participants.length > 0
         ? {
-            type: "participant" as const,
-            data: participants[0],
-          }
+          type: "participant" as const,
+          data: participants[0],
+        }
         : { type: "host" as const, data: host };
 
   // Get the active participant ID (either explicitly set or defaulting to first participant)
@@ -55,9 +55,10 @@ export function ActiveSpeakerView({
     (participants.length > 0 ? participants[0].id : null);
 
   // Get inactive participants (excluding the active one)
-  const inactiveParticipants = participants.filter(
-    (p) => p.id !== currentActiveParticipantId,
-  );
+  // FIX: If host is active, ALL participants are inactive and should be shown in rail
+  const inactiveParticipants = isHostActive
+    ? participants
+    : participants.filter((p) => p.id !== currentActiveParticipantId);
 
   // Determine if we're showing host as active
   const showingHostActive = isHostActive || participants.length === 0;
@@ -173,9 +174,8 @@ export function ActiveSpeakerView({
                   style={{
                     top: -210,
                     left: -210,
-                    background: showingHostActive
-                      ? "radial-gradient(circle, rgba(2, 89, 81, 0.3) 0%, transparent 70%)"
-                      : "radial-gradient(circle, rgba(12, 242, 93, 0.3) 0%, transparent 70%)",
+                    // FIX: Consistent color for host and participants
+                    background: "radial-gradient(circle, rgba(12, 242, 93, 0.3) 0%, transparent 70%)",
                     zIndex: -1,
                   }}
                   animate={{
@@ -205,7 +205,8 @@ export function ActiveSpeakerView({
                       analyserNode={analyserNode}
                       isActive={isPlaying}
                       size={VISUALIZER_SIZE}
-                      color={showingHostActive ? "teal" : "mint"}
+                      // FIX: Consistent color "mint"
+                      color="mint"
                     />
 
                     {/* Avatar in center */}
@@ -233,20 +234,15 @@ export function ActiveSpeakerView({
                         <div
                           className={cn(
                             "w-full h-full flex items-center justify-center",
-                            showingHostActive
-                              ? "bg-gradient-to-br from-brand-teal/30 to-brand-sea/30"
-                              : "bg-gradient-to-br from-primary/30 to-brand-teal/30",
+                            // FIX: Consistent gradient
+                            "bg-gradient-to-br from-primary/30 to-brand-teal/30",
                           )}
                         >
-                          {showingHostActive ? (
-                            <Mic className="w-20 h-20 text-brand-teal" />
-                          ) : (
-                            <span className="text-6xl font-bold text-white/80">
-                              {activeSpeaker.data.name
-                                ?.charAt(0)
-                                ?.toUpperCase() || "?"}
-                            </span>
-                          )}
+                          <span className="text-6xl font-bold text-white/80">
+                            {activeSpeaker.data.name
+                              ?.charAt(0)
+                              ?.toUpperCase() || "?"}
+                          </span>
                         </div>
                       )}
 
@@ -259,9 +255,8 @@ export function ActiveSpeakerView({
                       <motion.div
                         className={cn(
                           "absolute rounded-full border-2 pointer-events-none",
-                          showingHostActive
-                            ? "border-brand-teal/30"
-                            : "border-primary/30",
+                          // FIX: Consistent border
+                          "border-primary/30",
                         )}
                         style={{
                           width: AVATAR_ACTIVE_SIZE + 20,
@@ -293,22 +288,12 @@ export function ActiveSpeakerView({
                 transition={{ delay: 0.2, duration: 0.4 }}
                 className="broadcast-speaker-name"
               >
-                {showingHostActive && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="inline-flex items-center gap-1.5 px-3 py-1 bg-brand-teal/20 border border-brand-teal/40 rounded-full mb-2"
-                  >
-                    <Mic className="w-3 h-3 text-brand-sea" />
-                    <span className="text-xs font-semibold text-brand-sea uppercase tracking-wider">
-                      Host
-                    </span>
-                  </motion.div>
-                )}
+                {/* FIX: Removed Host badge for consistency */}
                 <h2
                   className={cn(
                     "text-3xl md:text-4xl font-bold",
-                    showingHostActive ? "neon-text-teal" : "neon-text-mint",
+                    // FIX: Consistent text color
+                    "neon-text-mint",
                   )}
                 >
                   {activeSpeaker.data.name || "Unknown Speaker"}

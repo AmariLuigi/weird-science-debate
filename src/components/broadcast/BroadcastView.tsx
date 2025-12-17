@@ -97,6 +97,17 @@ export function BroadcastView() {
     ? state.host.name
     : currentParticipant?.name;
 
+  // Calculate participant-only turn metrics
+  const totalParticipantTurns = state.turns.filter((t) => !t.isHostTurn).length;
+  const currentParticipantTurnCount = state.turns
+    .slice(0, state.currentTurnIndex + 1)
+    .filter((t) => !t.isHostTurn).length;
+
+  // Determine label for the turn counter
+  const turnLabel = isHostTurn
+    ? "Host Speaking"
+    : `Turn ${currentParticipantTurnCount} of ${totalParticipantTurns}`;
+
   // Handle when a single audio track ends
   const handleAudioEnded = useCallback(() => {
     console.log(
@@ -589,7 +600,7 @@ export function BroadcastView() {
               currentTime={turnElapsedTime}
               expectedDuration={expectedTurnDuration}
               position="top-right"
-              label={`Turn ${state.currentTurnIndex + 1}`}
+              label={turnLabel}
               showExpected={expectedTurnDuration > 0}
             />
           </>
@@ -664,8 +675,8 @@ export function BroadcastView() {
           <div className="max-w-4xl mx-auto">
             <PlaybackControls
               isPlaying={state.isPlaying}
-              currentTurnIndex={state.currentTurnIndex}
-              totalTurns={state.turns.length}
+              participantTurnIndex={currentParticipantTurnCount}
+              participantTotalTurns={totalParticipantTurns}
               onPlayPause={handlePlayPause}
               onRestart={handleRestart}
               onBackToSetup={handleBackToSetup}
@@ -679,13 +690,12 @@ export function BroadcastView() {
                 {audioData.map((_, idx) => (
                   <div
                     key={idx}
-                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                      idx === currentAudioIndex
-                        ? "bg-primary scale-125"
-                        : idx < currentAudioIndex
-                          ? "bg-primary/50"
-                          : "bg-slate-600"
-                    }`}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === currentAudioIndex
+                      ? "bg-primary scale-125"
+                      : idx < currentAudioIndex
+                        ? "bg-primary/50"
+                        : "bg-slate-600"
+                      }`}
                   />
                 ))}
                 <span className="ml-2 text-xs text-slate-500">

@@ -5,8 +5,8 @@ import { cn } from "@/lib/utils";
 
 interface PlaybackControlsProps {
   isPlaying: boolean;
-  currentTurnIndex: number;
-  totalTurns: number;
+  participantTurnIndex: number;
+  participantTotalTurns: number;
   onPlayPause: () => void;
   onRestart: () => void;
   onBackToSetup: () => void;
@@ -17,8 +17,8 @@ interface PlaybackControlsProps {
 
 export function PlaybackControls({
   isPlaying,
-  currentTurnIndex,
-  totalTurns,
+  participantTurnIndex,
+  participantTotalTurns,
   onPlayPause,
   onRestart,
   onBackToSetup,
@@ -26,8 +26,9 @@ export function PlaybackControls({
   currentSpeakerName,
   isHostTurn = false,
 }: PlaybackControlsProps) {
+  // Calculate progress using participant-only turns, excluding host turns
   const progress =
-    totalTurns > 0 ? ((currentTurnIndex + 1) / totalTurns) * 100 : 0;
+    participantTotalTurns > 0 ? (participantTurnIndex / participantTotalTurns) * 100 : 0;
 
   return (
     <motion.div
@@ -50,7 +51,7 @@ export function PlaybackControls({
                     : "bg-primary/20 text-primary",
                 )}
               >
-                {currentTurnIndex + 1} / {totalTurns}
+                {isHostTurn ? "Host" : `${participantTurnIndex} / ${participantTotalTurns}`}
               </span>
             </div>
             {currentSpeakerName && (
