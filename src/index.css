@@ -1,0 +1,153 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    * {
+        @apply border-slate-700/50;
+    }
+
+    body {
+        @apply bg-slate-950 text-white font-sans antialiased min-h-screen;
+        font-family:
+            "Inter",
+            system-ui,
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            Roboto,
+            sans-serif;
+    }
+
+    #root {
+        @apply min-h-screen;
+    }
+}
+
+@layer components {
+    .glass-panel {
+        @apply bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-2xl shadow-glass;
+    }
+
+    .glass-panel-light {
+        @apply bg-white/5 backdrop-blur-lg border border-white/10 rounded-xl;
+    }
+
+    .neon-border-cyan {
+        @apply border-2 border-neon-cyan shadow-neon-cyan;
+    }
+
+    .neon-border-purple {
+        @apply border-2 border-neon-purple shadow-neon-purple;
+    }
+
+    .neon-glow-cyan {
+        box-shadow:
+            0 0 20px rgba(0, 245, 255, 0.4),
+            0 0 40px rgba(0, 245, 255, 0.2),
+            0 0 60px rgba(0, 245, 255, 0.1);
+    }
+
+    .neon-glow-purple {
+        box-shadow:
+            0 0 20px rgba(191, 0, 255, 0.4),
+            0 0 40px rgba(191, 0, 255, 0.2),
+            0 0 60px rgba(191, 0, 255, 0.1);
+    }
+
+    .neon-text-cyan {
+        @apply text-neon-cyan;
+        text-shadow:
+            0 0 10px rgba(0, 245, 255, 0.7),
+            0 0 20px rgba(0, 245, 255, 0.5),
+            0 0 30px rgba(0, 245, 255, 0.3);
+    }
+
+    .neon-text-purple {
+        @apply text-neon-purple;
+        text-shadow:
+            0 0 10px rgba(191, 0, 255, 0.7),
+            0 0 20px rgba(191, 0, 255, 0.5),
+            0 0 30px rgba(191, 0, 255, 0.3);
+    }
+
+    .btn-primary {
+        @apply bg-gradient-to-r from-neon-cyan to-neon-purple text-white font-semibold
+           py-3 px-6 rounded-xl transition-all duration-300
+           hover:shadow-lg hover:shadow-neon-cyan/30 hover:scale-105
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100;
+    }
+
+    .btn-secondary {
+        @apply glass-panel-light text-white font-medium py-2 px-4 rounded-lg
+           transition-all duration-300 hover:bg-white/10 hover:border-white/20;
+    }
+
+    .input-field {
+        @apply w-full bg-slate-800/50 border border-white/10 rounded-lg px-4 py-3
+           text-white placeholder:text-slate-400
+           focus:outline-none focus:ring-2 focus:ring-neon-cyan/50 focus:border-neon-cyan/50
+           transition-all duration-300;
+    }
+
+    .card-inactive {
+        @apply glass-panel opacity-60 transition-all duration-500;
+    }
+
+    .card-active {
+        @apply glass-panel ring-2 ring-neon-cyan neon-glow-cyan transition-all duration-500;
+    }
+}
+
+@layer utilities {
+    .gradient-neon {
+        @apply bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-pink;
+    }
+
+    .gradient-neon-text {
+        @apply bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-pink bg-clip-text text-transparent;
+    }
+
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+/* Custom scrollbar for visible scrollbars */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    @apply bg-slate-800/50 rounded-full;
+}
+
+::-webkit-scrollbar-thumb {
+    @apply bg-slate-600 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-500;
+}
+
+/* Animation classes */
+.animate-in {
+    animation: animateIn 0.3s ease-out;
+}
+
+@keyframes animateIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
