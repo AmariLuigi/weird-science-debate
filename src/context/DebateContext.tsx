@@ -13,10 +13,21 @@ import {
   DebateContextType,
   Host,
   AudioTrack,
+  DebateTemplate,
+  IntroOutroConfig,
+  BroadcastPhase,
 } from "@/types/debate";
 import { generateId } from "@/lib/utils";
 
 const HOST_ID = "weird-science-host";
+
+const defaultIntroOutroConfig: IntroOutroConfig = {
+  enableIntro: true,
+  enableOutro: true,
+  introMusicVolume: 0.3,
+  outroMusicVolume: 0.3,
+  transitionSoundVolume: 0.5,
+};
 
 const initialState: DebateState = {
   title: "",
@@ -28,6 +39,9 @@ const initialState: DebateState = {
   turns: [],
   currentTurnIndex: 0,
   isPlaying: false,
+  template: undefined,
+  introOutroConfig: defaultIntroOutroConfig,
+  broadcastPhase: "intro",
 };
 
 const DebateContext = createContext<DebateContextType | undefined>(undefined);
@@ -356,7 +370,73 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
       ...prev,
       currentTurnIndex: 0,
       isPlaying: false,
+      broadcastPhase: prev.introOutroConfig.enableIntro ? "intro" : "debate",
     }));
+  }, []);
+
+  const setTemplate = useCallback((template: DebateTemplate | undefined) => {
+    setState((prev) => ({ ...prev, template }));
+  }, []);
+
+  const updateIntroOutroConfig = useCallback(
+    (updates: Partial<IntroOutroConfig>) => {
+      setState((prev) => {
+        let newIntroMusicUrl = prev.introOutroConfig.introMusicUrl;
+        if (updates.introMusicFile !== undefined) {
+          if (prev.introOutroConfig.introMusicUrl) {
+            URL.revokeObjectURL(prev.introOutroConfig.introMusicUrl);
+          }
+          newIntroMusicUrl = updates.introMusicFile
+            ? URL.createObjectURL(updates.introMusicFile)
+            : undefined;
+        }
+
+        let newOutroMusicUrl = prev.introOutroConfig.outroMusicUrl;
+        if (updates.outroMusicFile !== undefined) {
+          if (prev.introOutroConfig.outroMusicUrl) {
+            URL.revokeObjectURL(prev.introOutroConfig.outroMusicUrl);
+          }
+          newOutroMusicUrl = updates.outroMusicFile
+            ? URL.createObjectURL(updates.outroMusicFile)
+            : undefined;
+        }
+
+        let newTransitionSoundUrl = prev.introOutroConfig.transitionSoundUrl;
+        if (updates.transitionSoundFile !== undefined) {
+          if (prev.introOutroConfig.transitionSoundUrl) {
+            URL.revokeObjectURL(prev.introOutroConfig.transitionSoundUrl);
+          }
+          newTransitionSoundUrl = updates.transitionSoundFile
+            ? URL.createObjectURL(updates.transitionSoundFile)
+            : undefined;
+        }
+
+        return {
+          ...prev,
+          introOutroConfig: {
+            ...prev.introOutroConfig,
+            ...updates,
+            introMusicUrl:
+              updates.introMusicFile !== undefined
+                ? newIntroMusicUrl
+                : prev.introOutroConfig.introMusicUrl,
+            outroMusicUrl:
+              updates.outroMusicFile !== undefined
+                ? newOutroMusicUrl
+                : prev.introOutroConfig.outroMusicUrl,
+            transitionSoundUrl:
+              updates.transitionSoundFile !== undefined
+                ? newTransitionSoundUrl
+                : prev.introOutroConfig.transitionSoundUrl,
+          },
+        };
+      });
+    },
+    [],
+  );
+
+  const setBroadcastPhase = useCallback((phase: BroadcastPhase) => {
+    setState((prev) => ({ ...prev, broadcastPhase: phase }));
   }, []);
 
   // Helper function to get all audio URLs for a turn (legacy + tracks)
@@ -419,6 +499,9 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
     setIsPlaying,
     nextTurn,
     resetPlayback,
+    setTemplate,
+    updateIntroOutroConfig,
+    setBroadcastPhase,
     canStartDebate,
   };
 

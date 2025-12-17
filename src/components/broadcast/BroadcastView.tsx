@@ -1,13 +1,17 @@
 import { useEffect, useCallback, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Trophy } from "lucide-react";
 import { useDebate } from "@/context/DebateContext";
 import { useAudioEngine } from "@/hooks/useAudioEngine";
+import { useBackgroundAudio } from "@/hooks/useBackgroundAudio";
 import { Header } from "@/components/layout/Header";
 import { ActiveSpeakerView } from "./ActiveSpeakerView";
 import { PlaybackControls } from "./PlaybackControls";
-import { Trophy } from "lucide-react";
+import { IntroSequence } from "./IntroSequence";
+import { OutroSequence } from "./OutroSequence";
+import { TimerDisplay, DebateTimer } from "./TimerDisplay";
 import { Button } from "@/components/ui/Button";
-import { SubtitleCue, DebateTurn } from "@/types/debate";
+import { SubtitleCue, DebateTurn, TURN_TYPE_CONFIGS } from "@/types/debate";
 import { getCurrentCue } from "@/lib/srtParser";
 
 // Helper to get all audio URLs and their subtitles for a turn
@@ -47,6 +51,7 @@ export function BroadcastView() {
     setCurrentTurnIndex,
     nextTurn,
     resetPlayback,
+    setBroadcastPhase,
   } = useDebate();
 
   const [isFinished, setIsFinished] = useState(false);
@@ -55,8 +60,18 @@ export function BroadcastView() {
   );
   const [videoCurrentTime, setVideoCurrentTime] = useState(0);
   const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
+  const [turnElapsedTime, setTurnElapsedTime] = useState(0);
+  const [debateElapsedTime, setDebateElapsedTime] = useState(0);
   const hasAutoStartedRef = useRef(false);
   const subtitleIntervalRef = useRef<number | null>(null);
+  const timerIntervalRef = useRef<number | null>(null);
+  const debateStartTimeRef = useRef<number | null>(null);
+  const turnStartTimeRef = useRef<number | null>(null);
+  const prevTurnIndexRef = useRef<number>(-1);
+
+  const backgroundAudio = useBackgroundAudio();
+
+  const { introOutroConfig, broadcastPhase } = state;
 
   const currentTurn = state.turns[state.currentTurnIndex];
 
@@ -93,22 +108,30 @@ export function BroadcastView() {
 
     setCurrentSubtitle(null);
 
-    // Check if there are more audio tracks in this turn
     if (currentAudioIndex < totalAudioTracks - 1) {
-      // Move to next audio track
       console.log("[BroadcastView] Moving to next audio track");
       setCurrentAudioIndex((prev) => prev + 1);
     } else {
-      // All audio tracks finished, move to next turn
       console.log(
         "[BroadcastView] All audio tracks finished, moving to next turn",
       );
-      setCurrentAudioIndex(0); // Reset for next turn
+      setCurrentAudioIndex(0);
+
       if (state.currentTurnIndex < state.turns.length - 1) {
+        if (introOutroConfig.transitionSoundUrl) {
+          backgroundAudio.playTransitionSound(
+            introOutroConfig.transitionSoundUrl,
+            introOutroConfig.transitionSoundVolume,
+          );
+        }
         nextTurn();
       } else {
         setIsPlaying(false);
-        setIsFinished(true);
+        if (introOutroConfig.enableOutro) {
+          setBroadcastPhase("outro");
+        } else {
+          setIsFinished(true);
+        }
       }
     }
   }, [
@@ -118,6 +141,9 @@ export function BroadcastView() {
     state.turns.length,
     nextTurn,
     setIsPlaying,
+    introOutroConfig,
+    backgroundAudio,
+    setBroadcastPhase,
   ]);
 
   // Handle video time update for subtitles
@@ -195,6 +221,111 @@ export function BroadcastView() {
     isVideoTurn,
     videoCurrentTime,
   ]);
+
+  // Timer tracking for turn and debate elapsed time
+  useEffect(() => {
+    if (broadcastPhase !== "debate" || !state.isPlaying) {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+      return;
+    }
+
+    if (!debateStartTimeRef.current) {
+      debateStartTimeRef.current = Date.now() - debateElapsedTime * 1000;
+    }
+
+    if (prevTurnIndexRef.current !== state.currentTurnIndex) {
+      turnStartTimeRef.current = Date.now();
+      setTurnElapsedTime(0);
+      prevTurnIndexRef.current = state.currentTurnIndex;
+    }
+
+    if (!turnStartTimeRef.current) {
+      turnStartTimeRef.current = Date.now();
+    }
+
+    timerIntervalRef.current = window.setInterval(() => {
+      const now = Date.now();
+      if (turnStartTimeRef.current) {
+        setTurnElapsedTime((now - turnStartTimeRef.current) / 1000);
+      }
+      if (debateStartTimeRef.current) {
+        setDebateElapsedTime((now - debateStartTimeRef.current) / 1000);
+      }
+    }, 100);
+
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+      }
+    };
+  }, [broadcastPhase, state.isPlaying, state.currentTurnIndex, debateElapsedTime]);
+
+  // Handle intro completion
+  const handleIntroComplete = useCallback(() => {
+    console.log("[BroadcastView] Intro complete, starting debate");
+    backgroundAudio.fadeOut(500);
+    setBroadcastPhase("debate");
+    debateStartTimeRef.current = Date.now();
+    turnStartTimeRef.current = Date.now();
+
+    setTimeout(() => {
+      setIsPlaying(true);
+      if (!isVideoTurn && currentAudioData?.url) {
+        loadAudio(currentAudioData.url);
+        setTimeout(() => play(), 100);
+      }
+    }, 300);
+  }, [backgroundAudio, setBroadcastPhase, setIsPlaying, isVideoTurn, currentAudioData, loadAudio, play]);
+
+  // Handle outro replay
+  const handleOutroReplay = useCallback(() => {
+    backgroundAudio.stop();
+    resetPlayback();
+    setIsFinished(false);
+    setCurrentAudioIndex(0);
+    setTurnElapsedTime(0);
+    setDebateElapsedTime(0);
+    debateStartTimeRef.current = null;
+    turnStartTimeRef.current = null;
+    prevTurnIndexRef.current = -1;
+  }, [backgroundAudio, resetPlayback]);
+
+  // Start intro music when in intro phase
+  useEffect(() => {
+    if (broadcastPhase === "intro" && introOutroConfig.introMusicUrl) {
+      backgroundAudio.fadeIn(
+        introOutroConfig.introMusicUrl,
+        introOutroConfig.introMusicVolume,
+        1000,
+        true,
+      );
+    }
+    return () => {
+      if (broadcastPhase === "intro") {
+        backgroundAudio.stop();
+      }
+    };
+  }, [broadcastPhase, introOutroConfig, backgroundAudio]);
+
+  // Start outro music when in outro phase
+  useEffect(() => {
+    if (broadcastPhase === "outro" && introOutroConfig.outroMusicUrl) {
+      backgroundAudio.fadeIn(
+        introOutroConfig.outroMusicUrl,
+        introOutroConfig.outroMusicVolume,
+        1000,
+        true,
+      );
+    }
+  }, [broadcastPhase, introOutroConfig, backgroundAudio]);
+
+  // Get expected duration for current turn
+  const expectedTurnDuration = currentTurn?.turnType
+    ? TURN_TYPE_CONFIGS[currentTurn.turnType]?.expectedDuration || 0
+    : 0;
 
   // Load and play audio when turn changes or audio index changes (only for non-video turns)
   useEffect(() => {
@@ -311,6 +442,7 @@ export function BroadcastView() {
 
   // Handle restart
   const handleRestart = useCallback(() => {
+    backgroundAudio.stop();
     if (!isVideoTurn) {
       stop();
     }
@@ -319,10 +451,16 @@ export function BroadcastView() {
     setCurrentTurnIndex(0);
     setCurrentAudioIndex(0);
     setCurrentSubtitle(null);
-  }, [stop, resetPlayback, setCurrentTurnIndex, isVideoTurn]);
+    setTurnElapsedTime(0);
+    setDebateElapsedTime(0);
+    debateStartTimeRef.current = null;
+    turnStartTimeRef.current = null;
+    prevTurnIndexRef.current = -1;
+  }, [stop, resetPlayback, setCurrentTurnIndex, isVideoTurn, backgroundAudio]);
 
   // Handle back to setup
   const handleBackToSetup = useCallback(() => {
+    backgroundAudio.stop();
     if (!isVideoTurn) {
       stop();
     }
@@ -331,7 +469,38 @@ export function BroadcastView() {
     setCurrentSubtitle(null);
     setCurrentAudioIndex(0);
     setViewMode("config");
-  }, [stop, resetPlayback, setViewMode, isVideoTurn]);
+  }, [stop, resetPlayback, setViewMode, isVideoTurn, backgroundAudio]);
+
+  // Render intro sequence
+  if (broadcastPhase === "intro" && introOutroConfig.enableIntro) {
+    return (
+      <IntroSequence
+        title={state.title}
+        participants={state.participants}
+        host={state.host}
+        turns={state.turns}
+        onComplete={handleIntroComplete}
+        introMusicUrl={introOutroConfig.introMusicUrl}
+        introMusicVolume={introOutroConfig.introMusicVolume}
+      />
+    );
+  }
+
+  // Render outro sequence
+  if (broadcastPhase === "outro") {
+    return (
+      <OutroSequence
+        title={state.title}
+        participants={state.participants}
+        host={state.host}
+        totalTurns={state.turns.length}
+        onReplay={handleOutroReplay}
+        onBackToSetup={handleBackToSetup}
+        outroMusicUrl={introOutroConfig.outroMusicUrl}
+        outroMusicVolume={introOutroConfig.outroMusicVolume}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden bg-slate-950">
@@ -412,6 +581,20 @@ export function BroadcastView() {
 
       {/* Main content area - must give full dimensions for grid layout */}
       <div className="flex-1 relative z-10 w-full">
+        {/* Timer Displays */}
+        {state.isPlaying && (
+          <>
+            <DebateTimer elapsedTime={debateElapsedTime} position="top-left" />
+            <TimerDisplay
+              currentTime={turnElapsedTime}
+              expectedDuration={expectedTurnDuration}
+              position="top-right"
+              label={`Turn ${state.currentTurnIndex + 1}`}
+              showExpected={expectedTurnDuration > 0}
+            />
+          </>
+        )}
+
         <AnimatePresence mode="wait">
           {!isFinished ? (
             <div className="w-full h-full">

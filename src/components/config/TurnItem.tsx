@@ -12,8 +12,10 @@ import {
   Video,
   Plus,
   Music,
+  Clock,
+  AlertTriangle,
 } from "lucide-react";
-import { DebateTurn, AudioTrack } from "@/types/debate";
+import { DebateTurn, AudioTrack, TurnType, TURN_TYPE_CONFIGS } from "@/types/debate";
 import { useDebate } from "@/context/DebateContext";
 import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
@@ -26,6 +28,12 @@ import {
   ConversionProgress,
 } from "@/lib/audioConverter";
 import { parseSRTFile } from "@/lib/srtParser";
+import {
+  getAudioDuration,
+  getVideoDuration,
+  formatDuration,
+  getTotalTurnDuration,
+} from "@/lib/audioDuration";
 
 interface TurnItemProps {
   turn: DebateTurn;
@@ -100,17 +108,33 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
       ? !!(turn.videoUrl || hasAnyAudio)
       : turn.participantId && hasAnyAudio;
 
+    // Calculate total duration for this turn
+    const totalDuration = getTotalTurnDuration(turn.audioTracks, turn.duration);
+    const hasTemplate = !!state.template;
+    const expectedDuration = turn.turnType
+      ? TURN_TYPE_CONFIGS[turn.turnType]?.expectedDuration || 0
+      : 0;
+    const durationDiff = expectedDuration > 0 ? totalDuration - expectedDuration : 0;
+    const durationWarning =
+      expectedDuration > 0 && Math.abs(durationDiff) > expectedDuration * 0.3;
+
+    // Turn type options for select
+    const turnTypeOptions = Object.values(TURN_TYPE_CONFIGS).map((config) => ({
+      value: config.id,
+      label: `${config.label} (${formatDuration(config.expectedDuration)})`,
+    }));
+
     const handleAudioChange = useCallback(
       async (file: File | undefined) => {
-        // Reset converted state
         setWasConverted(false);
 
         if (!file) {
-          updateTurn(turn.id, { audioFile: undefined });
+          updateTurn(turn.id, { audioFile: undefined, duration: undefined });
           return;
         }
 
-        // Check if conversion is needed
+        let finalFile = file;
+
         if (needsConversion(file)) {
           setIsConverting(true);
           setConversionProgress({ stage: "decoding", progress: 0 });
@@ -120,29 +144,20 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
               setConversionProgress(progress);
             });
 
-            // Create a new File object from the converted blob
-            const convertedFile = new File(
-              [result.blob],
-              result.convertedName,
-              {
-                type: "audio/mpeg",
-              },
-            );
-
+            finalFile = new File([result.blob], result.convertedName, {
+              type: "audio/mpeg",
+            });
             setWasConverted(true);
-            updateTurn(turn.id, { audioFile: convertedFile });
           } catch (error) {
             console.error("Conversion failed:", error);
-            // Fall back to original file
-            updateTurn(turn.id, { audioFile: file });
           } finally {
             setIsConverting(false);
             setConversionProgress(null);
           }
-        } else {
-          // No conversion needed
-          updateTurn(turn.id, { audioFile: file });
         }
+
+        const duration = await getAudioDuration(finalFile);
+        updateTurn(turn.id, { audioFile: finalFile, duration });
       },
       [turn.id, updateTurn],
     );
@@ -150,11 +165,15 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
     const handleTrackAudioChange = useCallback(
       async (trackId: string, file: File | undefined) => {
         if (!file) {
-          updateAudioTrack(turn.id, trackId, { audioFile: undefined });
+          updateAudioTrack(turn.id, trackId, {
+            audioFile: undefined,
+            duration: undefined,
+          });
           return;
         }
 
-        // Check if conversion is needed
+        let finalFile = file;
+
         if (needsConversion(file)) {
           setTrackConversions((prev) => {
             const newMap = new Map(prev);
@@ -179,14 +198,9 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
               });
             });
 
-            // Create a new File object from the converted blob
-            const convertedFile = new File(
-              [result.blob],
-              result.convertedName,
-              {
-                type: "audio/mpeg",
-              },
-            );
+            finalFile = new File([result.blob], result.convertedName, {
+              type: "audio/mpeg",
+            });
 
             setTrackConversions((prev) => {
               const newMap = new Map(prev);
@@ -198,7 +212,6 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
               });
               return newMap;
             });
-            updateAudioTrack(turn.id, trackId, { audioFile: convertedFile });
           } catch (error) {
             console.error("Conversion failed:", error);
             setTrackConversions((prev) => {
@@ -206,22 +219,21 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
               newMap.delete(trackId);
               return newMap;
             });
-            // Fall back to original file
-            updateAudioTrack(turn.id, trackId, { audioFile: file });
           }
-        } else {
-          // No conversion needed
-          updateAudioTrack(turn.id, trackId, { audioFile: file });
         }
+
+        const duration = await getAudioDuration(finalFile);
+        updateAudioTrack(turn.id, trackId, { audioFile: finalFile, duration });
       },
       [turn.id, updateAudioTrack],
     );
 
     const handleVideoChange = useCallback(
-      (e: React.ChangeEvent<HTMLInputElement>) => {
+      async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-          updateTurn(turn.id, { videoFile: file });
+          const duration = await getVideoDuration(file);
+          updateTurn(turn.id, { videoFile: file, duration });
         }
       },
       [turn.id, updateTurn],
@@ -515,6 +527,54 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
               }
               className="text-sm"
             />
+
+            {/* Turn Type and Duration Row */}
+            <div className="flex items-center gap-3 flex-wrap">
+              {/* Turn Type Selector */}
+              {hasTemplate && (
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={turn.turnType || ""}
+                    onChange={(value: string) =>
+                      updateTurn(turn.id, { turnType: value as TurnType })
+                    }
+                    placeholder="Select turn type..."
+                    options={turnTypeOptions}
+                  />
+                </div>
+              )}
+
+              {/* Duration Display */}
+              {totalDuration > 0 && (
+                <div
+                  className={cn(
+                    "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
+                    durationWarning
+                      ? "bg-amber-500/20 border border-amber-500/30 text-amber-400"
+                      : "bg-primary/20 border border-primary/30 text-primary",
+                  )}
+                >
+                  <Clock className="w-3 h-3" />
+                  <span>{formatDuration(totalDuration)}</span>
+                  {expectedDuration > 0 && (
+                    <span className="text-slate-400">
+                      / {formatDuration(expectedDuration)}
+                    </span>
+                  )}
+                  {durationWarning && (
+                    <AlertTriangle className="w-3 h-3 text-amber-400" />
+                  )}
+                </div>
+              )}
+
+              {/* Expected duration hint when no audio yet */}
+              {totalDuration === 0 && expectedDuration > 0 && (
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-700/50 border border-slate-600/30 text-slate-400">
+                  <Clock className="w-3 h-3" />
+                  <span>Expected: {formatDuration(expectedDuration)}</span>
+                </div>
+              )}
+            </div>
 
             {/* Host Turn Layout - Video primary, Audio optional */}
             {turn.isHostTurn ? (

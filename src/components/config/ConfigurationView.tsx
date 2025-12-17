@@ -6,13 +6,16 @@ import { DebateTitleInput } from "./DebateTitleInput";
 import { ParticipantsSection } from "./ParticipantsSection";
 import { HostSection } from "./HostSection";
 import { ScriptTimeline } from "./ScriptTimeline";
+import { TemplateSelector } from "./TemplateSelector";
+import { AudioEnhancementsSection } from "./AudioEnhancementsSection";
 import { Button } from "@/components/ui/Button";
 
 export function ConfigurationView() {
-  const { state, setTitle, setViewMode, canStartDebate } = useDebate();
+  const { state, setTitle, setViewMode, canStartDebate, setBroadcastPhase } = useDebate();
 
   const handleStartDebate = () => {
     if (canStartDebate) {
+      setBroadcastPhase(state.introOutroConfig.enableIntro ? "intro" : "debate");
       setViewMode("broadcast");
     }
   };
@@ -77,6 +80,15 @@ export function ConfigurationView() {
           {/* Debate Title */}
           <DebateTitleInput value={state.title} onChange={setTitle} />
 
+          {/* Template Selector */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <TemplateSelector />
+          </motion.div>
+
           {/* Host Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -93,6 +105,15 @@ export function ConfigurationView() {
             transition={{ delay: 0.2 }}
           >
             <ParticipantsSection />
+          </motion.div>
+
+          {/* Audio Enhancements Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+          >
+            <AudioEnhancementsSection />
           </motion.div>
 
           {/* Script Timeline */}
