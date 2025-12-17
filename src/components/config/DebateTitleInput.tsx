@@ -16,8 +16,8 @@ export function DebateTitleInput({ value, onChange }: DebateTitleInputProps) {
       className="glass-panel p-6"
     >
       <div className="flex items-center gap-3 mb-4">
-        <div className="p-2 rounded-lg bg-gradient-to-br from-neon-cyan/20 to-neon-purple/20 border border-neon-cyan/30">
-          <Type className="w-5 h-5 text-neon-cyan" />
+        <div className="p-2 rounded-lg bg-gradient-to-br from-brand-sea/20 to-primary/20 border border-primary/30">
+          <Type className="w-5 h-5 text-primary" />
         </div>
         <h2 className="text-lg font-semibold text-white">Debate Title</h2>
       </div>

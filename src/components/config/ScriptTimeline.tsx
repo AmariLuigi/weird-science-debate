@@ -44,8 +44,8 @@ export function ScriptTimeline() {
     <div className="glass-panel p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-neon-cyan/20 rounded-lg">
-            <ListOrdered className="w-5 h-5 text-neon-cyan" />
+          <div className="p-2 bg-primary/20 rounded-lg">
+            <ListOrdered className="w-5 h-5 text-primary" />
           </div>
           <h2 className="text-xl font-semibold text-white">Script Timeline</h2>
           <span className="px-2 py-0.5 bg-white/10 rounded-full text-sm text-slate-300">

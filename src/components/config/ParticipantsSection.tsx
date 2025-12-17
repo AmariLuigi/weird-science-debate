@@ -11,8 +11,8 @@ export function ParticipantsSection() {
     <div className="glass-panel p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-neon-purple/20 rounded-lg">
-            <Users className="w-5 h-5 text-neon-purple" />
+          <div className="p-2 bg-brand-green/20 rounded-lg">
+            <Users className="w-5 h-5 text-brand-green" />
           </div>
           <h2 className="text-xl font-semibold text-white">Participants</h2>
           <span className="px-2 py-0.5 bg-white/10 rounded-full text-sm text-slate-300">

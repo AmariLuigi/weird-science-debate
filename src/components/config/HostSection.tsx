@@ -8,8 +8,8 @@ export function HostSection() {
   return (
     <div className="glass-panel p-6">
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-neon-purple/20 rounded-lg">
-          <Mic className="w-5 h-5 text-neon-purple" />
+        <div className="p-2 bg-brand-teal/20 rounded-lg">
+          <Mic className="w-5 h-5 text-brand-sea" />
         </div>
         <div>
           <h2 className="text-xl font-semibold text-white">Host</h2>
@@ -35,9 +35,7 @@ export function HostSection() {
           <div className="glass-panel-light p-4 rounded-lg">
             <p className="text-sm text-slate-300">
               The host{" "}
-              <span className="text-neon-purple font-semibold">
-                Weird Science
-              </span>{" "}
+              <span className="text-primary font-semibold">Weird Science</span>{" "}
               will appear in the broadcast and can have speaking turns
               throughout the debate.
             </p>

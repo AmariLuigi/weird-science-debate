@@ -30,7 +30,7 @@ export function HostCardBroadcast({
       className={cn(
         "relative flex flex-col items-center p-6 rounded-2xl transition-all duration-500",
         isActive
-          ? "bg-gradient-to-b from-purple-900/60 to-slate-900/60 backdrop-blur-xl border border-neon-purple/30"
+          ? "bg-gradient-to-b from-brand-dark/60 to-slate-900/60 backdrop-blur-xl border border-brand-teal/30"
           : "bg-slate-900/30 backdrop-blur-lg border border-white/5",
       )}
     >
@@ -38,10 +38,10 @@ export function HostCardBroadcast({
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-neon-purple/20 border border-neon-purple/40 rounded-full flex items-center gap-1.5"
+        className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-brand-teal/20 border border-brand-teal/40 rounded-full flex items-center gap-1.5"
       >
-        <Mic className="w-3 h-3 text-neon-purple" />
-        <span className="text-xs font-semibold text-neon-purple uppercase tracking-wider">
+        <Mic className="w-3 h-3 text-brand-sea" />
+        <span className="text-xs font-semibold text-brand-sea uppercase tracking-wider">
           Host
         </span>
       </motion.div>
@@ -54,7 +54,7 @@ export function HostCardBroadcast({
           className="absolute inset-0 rounded-2xl"
           style={{
             boxShadow:
-              "0 0 60px rgba(191, 0, 255, 0.3), 0 0 100px rgba(191, 0, 255, 0.1), inset 0 0 60px rgba(191, 0, 255, 0.05)",
+              "0 0 60px rgba(2, 89, 81, 0.3), 0 0 100px rgba(2, 89, 81, 0.1), inset 0 0 60px rgba(2, 89, 81, 0.05)",
           }}
         />
       )}
@@ -64,12 +64,12 @@ export function HostCardBroadcast({
         className="relative flex items-center justify-center mt-2"
         style={{ width: visualizerSize, height: visualizerSize }}
       >
-        {/* Circular visualizer - purple themed for host */}
+        {/* Circular visualizer - teal themed for host */}
         <CircularVisualizer
           analyserNode={analyserNode}
           isActive={isActive}
           size={visualizerSize}
-          color="purple"
+          color="teal"
         />
 
         {/* Avatar */}
@@ -97,7 +97,7 @@ export function HostCardBroadcast({
           className={cn(
             "relative rounded-full overflow-hidden border-4 transition-all duration-500",
             isActive
-              ? "border-neon-purple/50 shadow-lg shadow-neon-purple/30"
+              ? "border-brand-teal/50 shadow-lg shadow-brand-teal/30"
               : "border-white/10 opacity-70",
           )}
           style={{ width: avatarSize, height: avatarSize }}
@@ -109,14 +109,14 @@ export function HostCardBroadcast({
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-purple-700 to-purple-900 flex items-center justify-center">
+            <div className="w-full h-full bg-gradient-to-br from-brand-dark to-brand-teal flex items-center justify-center">
               <Mic className="w-12 h-12 text-white/40" />
             </div>
           )}
 
           {/* Active overlay glow */}
           {isActive && (
-            <div className="absolute inset-0 bg-gradient-to-t from-neon-purple/10 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-brand-teal/10 to-transparent" />
           )}
         </motion.div>
       </div>
@@ -126,7 +126,7 @@ export function HostCardBroadcast({
         animate={{ opacity: isActive ? 1 : 0.7 }}
         className={cn(
           "mt-4 text-xl font-bold transition-all duration-500",
-          isActive ? "text-white neon-text-purple" : "text-slate-300",
+          isActive ? "text-white neon-text-teal" : "text-slate-300",
         )}
       >
         {host.name}
@@ -151,9 +151,9 @@ export function HostCardBroadcast({
                 repeat: Infinity,
                 ease: "easeInOut",
               }}
-              className="w-2 h-2 rounded-full bg-neon-purple"
+              className="w-2 h-2 rounded-full bg-brand-sea"
             />
-            <span className="text-sm text-neon-purple font-medium">
+            <span className="text-sm text-brand-sea font-medium">
               {turnTitle}
             </span>
           </motion.div>

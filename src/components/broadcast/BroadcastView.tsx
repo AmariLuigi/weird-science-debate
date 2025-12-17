@@ -278,8 +278,8 @@ export function BroadcastView() {
           className="absolute top-0 left-0 w-[800px] h-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full"
           style={{
             background: isHostTurn
-              ? "radial-gradient(circle, rgba(191, 0, 255, 0.3) 0%, transparent 70%)"
-              : "radial-gradient(circle, rgba(0, 245, 255, 0.3) 0%, transparent 70%)",
+              ? "radial-gradient(circle, rgba(2, 89, 81, 0.3) 0%, transparent 70%)"
+              : "radial-gradient(circle, rgba(12, 242, 93, 0.3) 0%, transparent 70%)",
           }}
         />
         <motion.div
@@ -297,7 +297,7 @@ export function BroadcastView() {
           className="absolute bottom-0 right-0 w-[600px] h-[600px] translate-x-1/3 translate-y-1/3 rounded-full"
           style={{
             background:
-              "radial-gradient(circle, rgba(191, 0, 255, 0.25) 0%, transparent 70%)",
+              "radial-gradient(circle, rgba(2, 115, 94, 0.25) 0%, transparent 70%)",
           }}
         />
 
@@ -325,7 +325,7 @@ export function BroadcastView() {
         className="text-center pt-2 pb-4 relative z-10"
       >
         <h1 className="text-3xl md:text-4xl font-bold">
-          <span className="gradient-neon-text">{state.title || "Debate"}</span>
+          <span className="gradient-brand-text">{state.title || "Debate"}</span>
         </h1>
         {state.isPlaying && (
           <motion.div
@@ -383,11 +383,11 @@ export function BroadcastView() {
                   repeat: Infinity,
                   ease: "easeInOut",
                 }}
-                className="inline-block p-6 bg-gradient-to-br from-neon-cyan/20 to-neon-purple/20 rounded-full mb-6"
+                className="inline-block p-6 bg-gradient-to-br from-brand-sea/20 to-primary/20 rounded-full mb-6"
               >
-                <Trophy className="w-16 h-16 text-neon-cyan" />
+                <Trophy className="w-16 h-16 text-primary" />
               </motion.div>
-              <h2 className="text-3xl font-bold gradient-neon-text mb-4">
+              <h2 className="text-3xl font-bold gradient-brand-text mb-4">
                 Debate Complete!
               </h2>
               <p className="text-slate-400 mb-8">

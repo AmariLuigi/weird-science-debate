@@ -46,8 +46,8 @@ export function CurrentTurnOverlay({
           className={cn(
             "glass-panel px-6 py-4 flex items-center gap-4",
             "border border-white/20",
-            isPlaying && !isHostTurn && "border-neon-cyan/30 neon-glow-cyan",
-            isPlaying && isHostTurn && "border-neon-purple/30 neon-glow-purple",
+            isPlaying && !isHostTurn && "border-primary/30 neon-glow-mint",
+            isPlaying && isHostTurn && "border-brand-teal/30 neon-glow-teal",
           )}
         >
           {/* Turn indicator */}
@@ -55,13 +55,13 @@ export function CurrentTurnOverlay({
             <div
               className={cn(
                 "p-2 rounded-lg",
-                isHostTurn ? "bg-neon-purple/20" : "bg-neon-cyan/20",
+                isHostTurn ? "bg-brand-teal/20" : "bg-primary/20",
               )}
             >
               {isHostTurn ? (
-                <Mic className="w-4 h-4 text-neon-purple" />
+                <Mic className="w-4 h-4 text-brand-sea" />
               ) : (
-                <MessageCircle className="w-4 h-4 text-neon-cyan" />
+                <MessageCircle className="w-4 h-4 text-primary" />
               )}
             </div>
             <span className="text-sm text-slate-400">
@@ -83,7 +83,7 @@ export function CurrentTurnOverlay({
                 alt={speakerName || "Speaker"}
                 className={cn(
                   "w-10 h-10 rounded-full object-cover border-2",
-                  isHostTurn ? "border-neon-purple/50" : "border-neon-cyan/50",
+                  isHostTurn ? "border-brand-teal/50" : "border-primary/50",
                 )}
               />
             ) : isHostTurn ? (
@@ -91,7 +91,7 @@ export function CurrentTurnOverlay({
                 key="host-placeholder"
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-700 to-purple-900 flex items-center justify-center border-2 border-neon-purple/50"
+                className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-dark to-brand-teal flex items-center justify-center border-2 border-brand-teal/50"
               >
                 <Mic className="w-5 h-5 text-white/60" />
               </motion.div>
@@ -103,7 +103,7 @@ export function CurrentTurnOverlay({
                 animate={{ opacity: 1 }}
                 className={cn(
                   "font-semibold",
-                  isHostTurn ? "text-neon-purple" : "text-white",
+                  isHostTurn ? "text-brand-sea" : "text-white",
                 )}
               >
                 {speakerName || "Unknown Speaker"}
@@ -132,17 +132,17 @@ export function CurrentTurnOverlay({
               <span
                 className={cn(
                   "w-1 h-3 rounded-full animate-pulse",
-                  isHostTurn ? "bg-neon-purple" : "bg-neon-cyan",
+                  isHostTurn ? "bg-brand-teal" : "bg-primary",
                 )}
               />
               <span
-                className="w-1 h-4 bg-neon-purple rounded-full animate-pulse"
+                className="w-1 h-4 bg-brand-green rounded-full animate-pulse"
                 style={{ animationDelay: "0.1s" }}
               />
               <span
                 className={cn(
                   "w-1 h-3 rounded-full animate-pulse",
-                  isHostTurn ? "bg-neon-pink" : "bg-neon-pink",
+                  isHostTurn ? "bg-brand-sea" : "bg-brand-green",
                 )}
                 style={{ animationDelay: "0.2s" }}
               />

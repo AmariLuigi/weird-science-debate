@@ -77,7 +77,7 @@ export function ActiveSpeakerView({
               <div
                 className={cn(
                   "rounded-full overflow-hidden border-2 transition-all duration-300",
-                  "border-neon-purple/30 opacity-60 hover:opacity-80",
+                  "border-brand-teal/30 opacity-60 hover:opacity-80",
                 )}
                 style={{
                   width: inactiveAvatarSize,
@@ -91,13 +91,13 @@ export function ActiveSpeakerView({
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-purple-700 to-purple-900 flex items-center justify-center">
+                  <div className="w-full h-full bg-gradient-to-br from-brand-dark to-brand-teal flex items-center justify-center">
                     <Mic className="w-6 h-6 text-white/40" />
                   </div>
                 )}
               </div>
-              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-neon-purple/20 border border-neon-purple/30 rounded-full">
-                <span className="text-[10px] font-medium text-neon-purple uppercase">
+              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-brand-teal/20 border border-brand-teal/30 rounded-full">
+                <span className="text-[10px] font-medium text-brand-sea uppercase">
                   Host
                 </span>
               </div>
@@ -187,8 +187,8 @@ export function ActiveSpeakerView({
                 className={cn(
                   "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-3xl",
                   isHostActive
-                    ? "bg-gradient-radial from-neon-purple/20 via-neon-purple/5 to-transparent"
-                    : "bg-gradient-radial from-neon-cyan/20 via-neon-cyan/5 to-transparent",
+                    ? "bg-gradient-radial from-brand-teal/20 via-brand-dark/5 to-transparent"
+                    : "bg-gradient-radial from-primary/20 via-brand-green/5 to-transparent",
                 )}
               />
             </motion.div>
@@ -207,7 +207,7 @@ export function ActiveSpeakerView({
                   videoUrl={currentTurnVideoUrl}
                   isActive={isPlaying}
                   size={activeVisualizerSize}
-                  color="purple"
+                  color="teal"
                   isPlaying={isPlaying}
                   onEnded={onVideoEnded}
                   onTimeUpdate={onVideoTimeUpdate}
@@ -219,7 +219,7 @@ export function ActiveSpeakerView({
                     analyserNode={analyserNode}
                     isActive={isPlaying}
                     size={activeVisualizerSize}
-                    color={isHostActive ? "purple" : "cyan"}
+                    color={isHostActive ? "teal" : "mint"}
                   />
 
                   {/* Outer glow ring */}
@@ -227,8 +227,8 @@ export function ActiveSpeakerView({
                     className={cn(
                       "absolute rounded-full",
                       isHostActive
-                        ? "border-neon-purple/20"
-                        : "border-neon-cyan/20",
+                        ? "border-brand-teal/20"
+                        : "border-primary/20",
                     )}
                     style={{
                       width: activeAvatarSize + 40,
@@ -267,8 +267,8 @@ export function ActiveSpeakerView({
                     className={cn(
                       "relative rounded-full overflow-hidden border-4 shadow-2xl",
                       isHostActive
-                        ? "border-neon-purple/60 shadow-neon-purple/40"
-                        : "border-neon-cyan/60 shadow-neon-cyan/40",
+                        ? "border-brand-teal/60 shadow-brand-teal/40"
+                        : "border-primary/60 shadow-primary/40",
                     )}
                     style={{
                       width: activeAvatarSize,
@@ -282,7 +282,7 @@ export function ActiveSpeakerView({
                         className="w-full h-full object-cover"
                       />
                     ) : isHostActive ? (
-                      <div className="w-full h-full bg-gradient-to-br from-purple-700 to-purple-900 flex items-center justify-center">
+                      <div className="w-full h-full bg-gradient-to-br from-brand-dark to-brand-teal flex items-center justify-center">
                         <Mic className="w-16 h-16 text-white/40" />
                       </div>
                     ) : (
@@ -298,9 +298,7 @@ export function ActiveSpeakerView({
                     <div
                       className={cn(
                         "absolute inset-0 bg-gradient-to-t to-transparent",
-                        isHostActive
-                          ? "from-neon-purple/20"
-                          : "from-neon-cyan/20",
+                        isHostActive ? "from-brand-teal/20" : "from-primary/20",
                       )}
                     />
                   </motion.div>
@@ -319,10 +317,10 @@ export function ActiveSpeakerView({
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-neon-purple/20 border border-neon-purple/40 rounded-full mb-2"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-brand-teal/20 border border-brand-teal/40 rounded-full mb-2"
                 >
-                  <Mic className="w-3 h-3 text-neon-purple" />
-                  <span className="text-xs font-semibold text-neon-purple uppercase tracking-wider">
+                  <Mic className="w-3 h-3 text-brand-sea" />
+                  <span className="text-xs font-semibold text-brand-sea uppercase tracking-wider">
                     Host
                   </span>
                 </motion.div>
@@ -330,7 +328,7 @@ export function ActiveSpeakerView({
               <h2
                 className={cn(
                   "text-3xl md:text-4xl font-bold",
-                  isHostActive ? "neon-text-purple" : "neon-text-cyan",
+                  isHostActive ? "neon-text-teal" : "neon-text-mint",
                 )}
               >
                 {activeSpeaker.data.name || "Unknown Speaker"}
@@ -369,8 +367,8 @@ export function ActiveSpeakerView({
                       className={cn(
                         "absolute inset-0 rounded-xl border-2 pointer-events-none",
                         isHostActive
-                          ? "border-neon-purple/40"
-                          : "border-neon-cyan/40",
+                          ? "border-brand-teal/40"
+                          : "border-primary/40",
                       )}
                       animate={{
                         opacity: [0.4, 0.8, 0.4],
@@ -397,7 +395,7 @@ export function ActiveSpeakerView({
                           key={i}
                           className={cn(
                             "w-2 h-2 rounded-full",
-                            isHostActive ? "bg-neon-purple" : "bg-neon-cyan",
+                            isHostActive ? "bg-brand-sea" : "bg-primary",
                           )}
                           animate={{
                             scale: [1, 1.5, 1],

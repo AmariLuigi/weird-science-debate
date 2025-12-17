@@ -1,6 +1,6 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Zap } from 'lucide-react';
+import React from "react";
+import { motion } from "framer-motion";
+import { Zap } from "lucide-react";
 
 interface HeaderProps {
   title?: string;
@@ -19,12 +19,12 @@ export function Header({ title, showLogo = true, children }: HeaderProps) {
             className="flex items-center gap-3"
           >
             <div className="relative">
-              <div className="absolute inset-0 bg-neon-cyan/30 blur-xl rounded-full" />
-              <div className="relative bg-gradient-to-br from-neon-cyan to-neon-purple p-2.5 rounded-xl">
+              <div className="absolute inset-0 bg-primary/30 blur-xl rounded-full" />
+              <div className="relative bg-gradient-to-br from-brand-teal to-primary p-2.5 rounded-xl">
                 <Zap className="w-6 h-6 text-white" />
               </div>
             </div>
-            <span className="text-xl font-bold gradient-neon-text">
+            <span className="text-xl font-bold gradient-brand-text">
               Debate Simulator
             </span>
           </motion.div>
@@ -39,11 +39,7 @@ export function Header({ title, showLogo = true, children }: HeaderProps) {
           </motion.h1>
         )}
       </div>
-      {children && (
-        <div className="flex items-center gap-4">
-          {children}
-        </div>
-      )}
+      {children && <div className="flex items-center gap-4">{children}</div>}
     </header>
   );
 }

@@ -29,7 +29,7 @@ export function ParticipantCardBroadcast({
       className={cn(
         "relative flex flex-col items-center p-8 rounded-3xl transition-all duration-500",
         isActive
-          ? "bg-gradient-to-b from-slate-800/60 to-slate-900/60 backdrop-blur-xl border border-neon-cyan/30"
+          ? "bg-gradient-to-b from-slate-800/60 to-slate-900/60 backdrop-blur-xl border border-primary/30"
           : "bg-slate-900/30 backdrop-blur-lg border border-white/5",
       )}
     >
@@ -41,7 +41,7 @@ export function ParticipantCardBroadcast({
           className="absolute inset-0 rounded-3xl"
           style={{
             boxShadow:
-              "0 0 60px rgba(0, 245, 255, 0.3), 0 0 100px rgba(0, 245, 255, 0.1), inset 0 0 60px rgba(0, 245, 255, 0.05)",
+              "0 0 60px rgba(12, 242, 93, 0.3), 0 0 100px rgba(12, 242, 93, 0.1), inset 0 0 60px rgba(12, 242, 93, 0.05)",
           }}
         />
       )}
@@ -56,6 +56,7 @@ export function ParticipantCardBroadcast({
           analyserNode={analyserNode}
           isActive={isActive}
           size={visualizerSize}
+          color="mint"
         />
 
         {/* Avatar */}
@@ -83,7 +84,7 @@ export function ParticipantCardBroadcast({
           className={cn(
             "relative rounded-full overflow-hidden border-4 transition-all duration-500",
             isActive
-              ? "border-neon-cyan/50 shadow-lg shadow-neon-cyan/30"
+              ? "border-primary/50 shadow-lg shadow-primary/30"
               : "border-white/10 opacity-60",
           )}
           style={{ width: avatarSize, height: avatarSize }}
@@ -104,7 +105,7 @@ export function ParticipantCardBroadcast({
 
           {/* Active overlay glow */}
           {isActive && (
-            <div className="absolute inset-0 bg-gradient-to-t from-neon-cyan/10 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent" />
           )}
         </motion.div>
       </div>
@@ -114,7 +115,7 @@ export function ParticipantCardBroadcast({
         animate={{ opacity: isActive ? 1 : 0.6 }}
         className={cn(
           "mt-6 text-2xl font-bold transition-all duration-500",
-          isActive ? "text-white neon-text-cyan" : "text-slate-300",
+          isActive ? "text-white neon-text-mint" : "text-slate-300",
         )}
       >
         {participant.name || "Unnamed"}
@@ -139,9 +140,9 @@ export function ParticipantCardBroadcast({
                 repeat: Infinity,
                 ease: "easeInOut",
               }}
-              className="w-2 h-2 rounded-full bg-neon-cyan"
+              className="w-2 h-2 rounded-full bg-primary"
             />
-            <span className="text-sm text-neon-cyan font-medium">
+            <span className="text-sm text-primary font-medium">
               {turnTitle}
             </span>
           </motion.div>

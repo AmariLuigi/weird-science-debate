@@ -46,8 +46,8 @@ export function PlaybackControls({
                 className={cn(
                   "px-2 py-0.5 rounded font-semibold text-sm",
                   isHostTurn
-                    ? "bg-neon-purple/20 text-neon-purple"
-                    : "bg-neon-cyan/20 text-neon-cyan",
+                    ? "bg-brand-teal/20 text-brand-sea"
+                    : "bg-primary/20 text-primary",
                 )}
               >
                 {currentTurnIndex + 1} / {totalTurns}
@@ -58,20 +58,20 @@ export function PlaybackControls({
                 <span className="text-slate-600">•</span>
                 <div className="flex items-center gap-2">
                   {isHostTurn ? (
-                    <Mic className="w-4 h-4 text-neon-purple" />
+                    <Mic className="w-4 h-4 text-brand-sea" />
                   ) : (
-                    <Volume2 className="w-4 h-4 text-neon-cyan" />
+                    <Volume2 className="w-4 h-4 text-primary" />
                   )}
                   <span
                     className={cn(
                       "text-sm font-medium truncate",
-                      isHostTurn ? "text-neon-purple" : "text-white",
+                      isHostTurn ? "text-brand-sea" : "text-white",
                     )}
                   >
                     {currentSpeakerName}
                   </span>
                   {isHostTurn && (
-                    <span className="px-1.5 py-0.5 bg-neon-purple/20 border border-neon-purple/30 rounded text-xs text-neon-purple font-medium">
+                    <span className="px-1.5 py-0.5 bg-brand-teal/20 border border-brand-teal/30 rounded text-xs text-brand-sea font-medium">
                       HOST
                     </span>
                   )}
@@ -93,8 +93,8 @@ export function PlaybackControls({
               className={cn(
                 "h-full",
                 isHostTurn
-                  ? "bg-gradient-to-r from-neon-purple to-neon-pink"
-                  : "bg-gradient-to-r from-neon-cyan to-neon-purple",
+                  ? "bg-gradient-to-r from-brand-dark to-brand-sea"
+                  : "bg-gradient-to-r from-brand-sea to-primary",
               )}
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
@@ -109,7 +109,7 @@ export function PlaybackControls({
             variant="secondary"
             size="icon"
             onClick={onRestart}
-            className="hover:text-neon-cyan"
+            className="hover:text-primary"
           >
             <RotateCcw className="w-5 h-5" />
           </Button>
@@ -122,8 +122,8 @@ export function PlaybackControls({
               "w-14 h-14 rounded-full flex items-center justify-center",
               "shadow-lg transition-all duration-300",
               isHostTurn
-                ? "bg-gradient-to-r from-neon-purple to-neon-pink shadow-neon-purple/30 hover:shadow-neon-purple/50"
-                : "bg-gradient-to-r from-neon-cyan to-neon-purple shadow-neon-cyan/30 hover:shadow-neon-cyan/50",
+                ? "bg-gradient-to-r from-brand-dark to-brand-teal shadow-brand-teal/30 hover:shadow-brand-teal/50"
+                : "bg-gradient-to-r from-brand-sea to-primary shadow-primary/30 hover:shadow-primary/50",
             )}
           >
             {isPlaying ? (

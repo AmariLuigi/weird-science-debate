@@ -6,7 +6,7 @@ interface VideoVisualizerProps {
   isActive: boolean;
   size: number;
   className?: string;
-  color?: "cyan" | "purple";
+  color?: "mint" | "teal";
   isPlaying: boolean;
   onEnded?: () => void;
   onTimeUpdate?: (currentTime: number, duration: number) => void;
@@ -17,7 +17,7 @@ export function VideoVisualizer({
   isActive,
   size,
   className,
-  color = "purple",
+  color = "teal",
   isPlaying,
   onEnded,
   onTimeUpdate,
@@ -187,13 +187,13 @@ export function VideoVisualizer({
       ctx.drawImage(video, drawX, drawY, drawWidth, drawHeight);
       ctx.restore();
 
-      // Draw circular border around video
+      // Draw circular border around video - brand colors
       ctx.beginPath();
       ctx.arc(centerX, centerY, videoRadius, 0, Math.PI * 2);
       ctx.strokeStyle =
-        color === "purple"
-          ? "rgba(191, 0, 255, 0.6)"
-          : "rgba(0, 245, 255, 0.6)";
+        color === "teal"
+          ? "rgba(2, 89, 81, 0.6)" // brand-teal
+          : "rgba(12, 242, 93, 0.6)"; // brand-mint (primary)
       ctx.lineWidth = 4;
       ctx.stroke();
     } else {
@@ -201,12 +201,14 @@ export function VideoVisualizer({
       ctx.beginPath();
       ctx.arc(centerX, centerY, videoRadius, 0, Math.PI * 2);
       ctx.fillStyle =
-        color === "purple" ? "rgba(88, 28, 135, 0.5)" : "rgba(8, 47, 73, 0.5)";
+        color === "teal"
+          ? "rgba(3, 65, 89, 0.5)" // brand-dark
+          : "rgba(2, 115, 94, 0.5)"; // brand-sea
       ctx.fill();
       ctx.strokeStyle =
-        color === "purple"
-          ? "rgba(191, 0, 255, 0.4)"
-          : "rgba(0, 245, 255, 0.4)";
+        color === "teal"
+          ? "rgba(2, 89, 81, 0.4)" // brand-teal
+          : "rgba(12, 242, 93, 0.4)"; // brand-mint
       ctx.lineWidth = 2;
       ctx.stroke();
     }
@@ -221,25 +223,25 @@ export function VideoVisualizer({
       // Get frequency data
       analyser.getByteFrequencyData(dataArrayRef.current);
 
-      // Color configurations
+      // Color configurations - Brand palette teal to mint
       const colors = {
-        cyan: {
+        mint: {
           active: [
-            { stop: 0, color: "rgba(0, 245, 255, 0.8)" },
-            { stop: 0.5, color: "rgba(191, 0, 255, 0.9)" },
-            { stop: 1, color: "rgba(255, 0, 229, 1)" },
+            { stop: 0, color: "rgba(2, 115, 94, 0.8)" }, // brand-sea
+            { stop: 0.5, color: "rgba(3, 140, 62, 0.9)" }, // brand-green
+            { stop: 1, color: "rgba(12, 242, 93, 1)" }, // brand-mint (primary)
           ],
-          ring: "rgba(0, 245, 255, 0.3)",
-          outerGlow: "rgba(0, 245, 255, 0.1)",
+          ring: "rgba(12, 242, 93, 0.3)",
+          outerGlow: "rgba(12, 242, 93, 0.1)",
         },
-        purple: {
+        teal: {
           active: [
-            { stop: 0, color: "rgba(191, 0, 255, 0.8)" },
-            { stop: 0.5, color: "rgba(255, 0, 229, 0.9)" },
-            { stop: 1, color: "rgba(255, 100, 255, 1)" },
+            { stop: 0, color: "rgba(3, 65, 89, 0.8)" }, // brand-dark
+            { stop: 0.5, color: "rgba(2, 89, 81, 0.9)" }, // brand-teal
+            { stop: 1, color: "rgba(2, 115, 94, 1)" }, // brand-sea
           ],
-          ring: "rgba(191, 0, 255, 0.3)",
-          outerGlow: "rgba(191, 0, 255, 0.1)",
+          ring: "rgba(2, 89, 81, 0.3)",
+          outerGlow: "rgba(2, 89, 81, 0.1)",
         },
       };
 

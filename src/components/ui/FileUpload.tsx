@@ -67,7 +67,7 @@ export function FileUpload({
           whileTap={{ scale: 0.98 }}
           className={cn(
             "relative overflow-hidden rounded-full border-2 border-dashed border-white/20",
-            "hover:border-neon-cyan/50 transition-colors duration-300",
+            "hover:border-primary/50 transition-colors duration-300",
             "flex items-center justify-center bg-slate-800/50",
             compact ? "w-16 h-16" : "w-24 h-24",
           )}
@@ -121,14 +121,14 @@ export function FileUpload({
         className={cn(
           "w-full flex items-center gap-3 px-4 py-3 cursor-pointer",
           "bg-slate-800/50 border border-white/10 rounded-lg",
-          "hover:border-neon-cyan/50 hover:bg-slate-800/70",
+          "hover:border-primary/50 hover:bg-slate-800/70",
           "transition-all duration-300",
-          hasFile && "border-neon-cyan/30 bg-neon-cyan/5",
+          hasFile && "border-primary/30 bg-primary/5",
         )}
       >
         {hasFile ? (
           <>
-            <FileAudio className="w-5 h-5 text-neon-cyan" />
+            <FileAudio className="w-5 h-5 text-primary" />
             <span
               className="text-sm text-white truncate flex-1 text-left cursor-pointer"
               onClick={handleClick}

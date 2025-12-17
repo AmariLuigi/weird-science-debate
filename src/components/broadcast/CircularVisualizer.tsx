@@ -6,7 +6,7 @@ interface CircularVisualizerProps {
   isActive: boolean;
   size: number;
   className?: string;
-  color?: "cyan" | "purple";
+  color?: "mint" | "teal";
 }
 
 export function CircularVisualizer({
@@ -14,7 +14,7 @@ export function CircularVisualizer({
   isActive,
   size,
   className,
-  color = "cyan",
+  color = "mint",
 }: CircularVisualizerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameRef = useRef<number | null>(null);
@@ -47,25 +47,25 @@ export function CircularVisualizer({
     const barWidth = 3;
     const maxBarHeight = 30;
 
-    // Color configurations
+    // Color configurations - Brand palette teal to mint
     const colors = {
-      cyan: {
+      mint: {
         active: [
-          { stop: 0, color: "rgba(0, 245, 255, 0.8)" },
-          { stop: 0.5, color: "rgba(191, 0, 255, 0.9)" },
-          { stop: 1, color: "rgba(255, 0, 229, 1)" },
+          { stop: 0, color: "rgba(2, 115, 94, 0.8)" }, // brand-sea
+          { stop: 0.5, color: "rgba(3, 140, 62, 0.9)" }, // brand-green
+          { stop: 1, color: "rgba(12, 242, 93, 1)" }, // brand-mint (primary)
         ],
-        ring: "rgba(0, 245, 255, 0.3)",
-        outerGlow: "rgba(0, 245, 255, 0.1)",
+        ring: "rgba(12, 242, 93, 0.3)",
+        outerGlow: "rgba(12, 242, 93, 0.1)",
       },
-      purple: {
+      teal: {
         active: [
-          { stop: 0, color: "rgba(191, 0, 255, 0.8)" },
-          { stop: 0.5, color: "rgba(255, 0, 229, 0.9)" },
-          { stop: 1, color: "rgba(255, 100, 255, 1)" },
+          { stop: 0, color: "rgba(3, 65, 89, 0.8)" }, // brand-dark
+          { stop: 0.5, color: "rgba(2, 89, 81, 0.9)" }, // brand-teal
+          { stop: 1, color: "rgba(2, 115, 94, 1)" }, // brand-sea
         ],
-        ring: "rgba(191, 0, 255, 0.3)",
-        outerGlow: "rgba(191, 0, 255, 0.1)",
+        ring: "rgba(2, 89, 81, 0.3)",
+        outerGlow: "rgba(2, 89, 81, 0.1)",
       },
     };
 

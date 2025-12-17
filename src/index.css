@@ -33,48 +33,67 @@
         @apply bg-white/5 backdrop-blur-lg border border-white/10 rounded-xl;
     }
 
-    .neon-border-cyan {
-        @apply border-2 border-neon-cyan shadow-neon-cyan;
+    .neon-border-mint {
+        @apply border-2 border-primary shadow-neon-mint;
     }
 
-    .neon-border-purple {
-        @apply border-2 border-neon-purple shadow-neon-purple;
+    .neon-border-teal {
+        @apply border-2 border-brand-teal shadow-neon-teal;
     }
 
-    .neon-glow-cyan {
+    .neon-border-green {
+        @apply border-2 border-brand-green shadow-neon-green;
+    }
+
+    .neon-glow-mint {
         box-shadow:
-            0 0 20px rgba(0, 245, 255, 0.4),
-            0 0 40px rgba(0, 245, 255, 0.2),
-            0 0 60px rgba(0, 245, 255, 0.1);
+            0 0 20px rgba(12, 242, 93, 0.4),
+            0 0 40px rgba(12, 242, 93, 0.2),
+            0 0 60px rgba(12, 242, 93, 0.1);
     }
 
-    .neon-glow-purple {
+    .neon-glow-teal {
         box-shadow:
-            0 0 20px rgba(191, 0, 255, 0.4),
-            0 0 40px rgba(191, 0, 255, 0.2),
-            0 0 60px rgba(191, 0, 255, 0.1);
+            0 0 20px rgba(2, 89, 81, 0.4),
+            0 0 40px rgba(2, 89, 81, 0.2),
+            0 0 60px rgba(2, 89, 81, 0.1);
     }
 
-    .neon-text-cyan {
-        @apply text-neon-cyan;
-        text-shadow:
-            0 0 10px rgba(0, 245, 255, 0.7),
-            0 0 20px rgba(0, 245, 255, 0.5),
-            0 0 30px rgba(0, 245, 255, 0.3);
+    .neon-glow-green {
+        box-shadow:
+            0 0 20px rgba(3, 140, 62, 0.4),
+            0 0 40px rgba(3, 140, 62, 0.2),
+            0 0 60px rgba(3, 140, 62, 0.1);
     }
 
-    .neon-text-purple {
-        @apply text-neon-purple;
+    .neon-text-mint {
+        @apply text-primary;
         text-shadow:
-            0 0 10px rgba(191, 0, 255, 0.7),
-            0 0 20px rgba(191, 0, 255, 0.5),
-            0 0 30px rgba(191, 0, 255, 0.3);
+            0 0 10px rgba(12, 242, 93, 0.7),
+            0 0 20px rgba(12, 242, 93, 0.5),
+            0 0 30px rgba(12, 242, 93, 0.3);
+    }
+
+    .neon-text-teal {
+        @apply text-brand-teal;
+        text-shadow:
+            0 0 10px rgba(2, 89, 81, 0.7),
+            0 0 20px rgba(2, 89, 81, 0.5),
+            0 0 30px rgba(2, 89, 81, 0.3);
+    }
+
+    .neon-text-green {
+        @apply text-brand-green;
+        text-shadow:
+            0 0 10px rgba(3, 140, 62, 0.7),
+            0 0 20px rgba(3, 140, 62, 0.5),
+            0 0 30px rgba(3, 140, 62, 0.3);
     }
 
     .btn-primary {
-        @apply bg-gradient-to-r from-neon-cyan to-neon-purple text-white font-semibold
+        @apply bg-gradient-to-r from-brand-sea to-primary text-white font-semibold
            py-3 px-6 rounded-xl transition-all duration-300
-           hover:shadow-lg hover:shadow-neon-cyan/30 hover:scale-105
+           hover:shadow-lg hover:shadow-primary/30 hover:scale-105
            disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100;
     }
 
@@ -86,7 +105,7 @@
     .input-field {
         @apply w-full bg-slate-800/50 border border-white/10 rounded-lg px-4 py-3
            text-white placeholder:text-slate-400
-           focus:outline-none focus:ring-2 focus:ring-neon-cyan/50 focus:border-neon-cyan/50
+           focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50
            transition-all duration-300;
     }
 
@@ -95,17 +114,17 @@
     }
 
     .card-active {
-        @apply glass-panel ring-2 ring-neon-cyan neon-glow-cyan transition-all duration-500;
+        @apply glass-panel ring-2 ring-primary neon-glow-mint transition-all duration-500;
     }
 }
 
 @layer utilities {
-    .gradient-neon {
-        @apply bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-pink;
+    .gradient-brand {
+        @apply bg-gradient-to-r from-brand-dark via-brand-sea to-primary;
     }
 
-    .gradient-neon-text {
-        @apply bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-pink bg-clip-text text-transparent;
+    .gradient-brand-text {
+        @apply bg-gradient-to-r from-brand-teal via-brand-green to-primary bg-clip-text text-transparent;
     }
 
     .scrollbar-hide {
@@ -129,11 +148,11 @@
 }
 
 ::-webkit-scrollbar-thumb {
-    @apply bg-slate-600 rounded-full;
+    @apply bg-brand-teal rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    @apply bg-slate-500;
+    @apply bg-brand-sea;
 }
 
 /* Animation classes */

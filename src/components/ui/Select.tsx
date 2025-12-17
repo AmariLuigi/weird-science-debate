@@ -32,7 +32,7 @@ export function Select({
         className={cn(
           "w-full appearance-none bg-slate-800/50 border border-white/10 rounded-lg",
           "px-4 py-3 pr-10 text-white",
-          "focus:outline-none focus:ring-2 focus:ring-neon-cyan/50 focus:border-neon-cyan/50",
+          "focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50",
           "transition-all duration-300",
           "disabled:opacity-50 disabled:cursor-not-allowed",
           !value && "text-slate-400",

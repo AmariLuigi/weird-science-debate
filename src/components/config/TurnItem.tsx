@@ -197,7 +197,7 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
           isDragging && "opacity-50 shadow-2xl scale-[1.02] z-50",
           !isValid && "border-l-2 border-l-amber-500/50",
           turn.isHostTurn &&
-            "border-l-2 border-l-neon-purple/50 bg-neon-purple/5",
+            "border-l-2 border-l-brand-teal/50 bg-brand-teal/5",
         )}
       >
         <div className="flex items-start gap-4">
@@ -215,12 +215,12 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
             className={cn(
               "flex-shrink-0 w-8 h-8 rounded-full border border-white/10 flex items-center justify-center",
               turn.isHostTurn
-                ? "bg-gradient-to-br from-neon-purple/30 to-neon-pink/20"
-                : "bg-gradient-to-br from-neon-cyan/20 to-neon-purple/20",
+                ? "bg-gradient-to-br from-brand-teal/30 to-brand-sea/20"
+                : "bg-gradient-to-br from-primary/20 to-brand-teal/20",
             )}
           >
             {turn.isHostTurn ? (
-              <Mic className="w-4 h-4 text-neon-purple" />
+              <Mic className="w-4 h-4 text-brand-teal" />
             ) : (
               <span className="text-sm font-semibold text-white">
                 {index + 1}
@@ -233,7 +233,7 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
             {/* Host Label for host turns */}
             {turn.isHostTurn && (
               <div className="flex items-center gap-2 mb-1">
-                <span className="px-2 py-0.5 bg-neon-purple/20 border border-neon-purple/30 rounded-full text-xs font-medium text-neon-purple">
+                <span className="px-2 py-0.5 bg-brand-teal/20 border border-brand-teal/30 rounded-full text-xs font-medium text-brand-teal">
                   HOST - Weird Science
                 </span>
               </div>
@@ -257,7 +257,7 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
                 {/* Video Upload - Primary for host */}
                 <div className="relative">
                   {turn.videoUrl ? (
-                    <div className="w-full flex items-center gap-3 px-4 py-3 bg-slate-800/50 border border-neon-purple/30 rounded-lg">
+                    <div className="w-full flex items-center gap-3 px-4 py-3 bg-slate-800/50 border border-brand-teal/30 rounded-lg">
                       <div className="relative w-12 h-12 rounded overflow-hidden flex-shrink-0">
                         <video
                           src={turn.videoUrl}
@@ -272,7 +272,7 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
                         <div className="text-sm text-white truncate">
                           {turn.videoFile?.name || "Video"}
                         </div>
-                        <div className="text-xs text-neon-purple flex items-center gap-1">
+                        <div className="text-xs text-brand-teal flex items-center gap-1">
                           <Video className="w-3 h-3" />
                           Video with audio will play in visualizer
                         </div>
@@ -286,9 +286,9 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
                       </button>
                     </div>
                   ) : (
-                    <label className="w-full flex items-center gap-3 px-4 py-3 bg-slate-800/50 border border-dashed border-neon-purple/40 rounded-lg hover:border-neon-purple/60 hover:bg-slate-800/70 transition-all duration-300 cursor-pointer">
-                      <div className="p-2 bg-neon-purple/20 rounded-lg">
-                        <Video className="w-5 h-5 text-neon-purple" />
+                    <label className="w-full flex items-center gap-3 px-4 py-3 bg-slate-800/50 border border-dashed border-brand-teal/40 rounded-lg hover:border-brand-teal/60 hover:bg-slate-800/70 transition-all duration-300 cursor-pointer">
+                      <div className="p-2 bg-brand-teal/20 rounded-lg">
+                        <Video className="w-5 h-5 text-brand-teal" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm text-white">Upload Video</div>
@@ -319,15 +319,15 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div className="relative">
                     {isConverting ? (
-                      <div className="w-full flex items-center gap-3 px-4 py-3 bg-slate-800/50 border border-neon-cyan/30 rounded-lg">
-                        <Loader2 className="w-5 h-5 text-neon-cyan animate-spin" />
+                      <div className="w-full flex items-center gap-3 px-4 py-3 bg-slate-800/50 border border-primary/30 rounded-lg">
+                        <Loader2 className="w-5 h-5 text-primary animate-spin" />
                         <div className="flex-1 min-w-0">
                           <div className="text-sm text-white truncate">
                             {getProgressText()}
                           </div>
                           <div className="mt-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-gradient-to-r from-neon-cyan to-neon-purple transition-all duration-300"
+                              className="h-full bg-gradient-to-r from-primary to-brand-teal transition-all duration-300"
                               style={{
                                 width: `${conversionProgress?.progress || 0}%`,
                               }}
@@ -444,15 +444,15 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
                 {/* Audio Upload with Conversion */}
                 <div className="relative">
                   {isConverting ? (
-                    <div className="w-full flex items-center gap-3 px-4 py-3 bg-slate-800/50 border border-neon-cyan/30 rounded-lg">
-                      <Loader2 className="w-5 h-5 text-neon-cyan animate-spin" />
+                    <div className="w-full flex items-center gap-3 px-4 py-3 bg-slate-800/50 border border-primary/30 rounded-lg">
+                      <Loader2 className="w-5 h-5 text-primary animate-spin" />
                       <div className="flex-1 min-w-0">
                         <div className="text-sm text-white truncate">
                           {getProgressText()}
                         </div>
                         <div className="mt-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-gradient-to-r from-neon-cyan to-neon-purple transition-all duration-300"
+                            className="h-full bg-gradient-to-r from-primary to-brand-teal transition-all duration-300"
                             style={{
                               width: `${conversionProgress?.progress || 0}%`,
                             }}
