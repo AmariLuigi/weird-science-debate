@@ -504,7 +504,7 @@ export function BroadcastView() {
         title={state.title}
         participants={state.participants}
         host={state.host}
-        totalTurns={state.turns.length}
+        participantTurns={totalParticipantTurns}
         onReplay={handleOutroReplay}
         onBackToSetup={handleBackToSetup}
         outroMusicUrl={introOutroConfig.outroMusicUrl}
@@ -565,7 +565,11 @@ export function BroadcastView() {
         style={{ paddingLeft: "var(--broadcast-rail-width)" }}
       >
         <h1 className="text-3xl md:text-4xl font-bold">
-          <span className="gradient-brand-text">{state.title || "Debate"}</span>
+          <span className="gradient-brand-text">
+            {currentTurn?.turnType
+              ? TURN_TYPE_CONFIGS[currentTurn.turnType]?.label || "Speaking"
+              : "Speaking"}
+          </span>
         </h1>
         {state.isPlaying && (
           <motion.div

@@ -7,7 +7,7 @@ interface OutroSequenceProps {
   title: string;
   participants: Participant[];
   host: Host;
-  totalTurns: number;
+  participantTurns: number;
   onReplay: () => void;
   onBackToSetup: () => void;
   outroMusicUrl?: string;
@@ -17,7 +17,7 @@ interface OutroSequenceProps {
 export function OutroSequence({
   title,
   participants,
-  totalTurns,
+  participantTurns,
   onReplay,
   onBackToSetup,
 }: OutroSequenceProps) {
@@ -103,7 +103,7 @@ export function OutroSequence({
           transition={{ delay: 0.5 }}
           className="text-xl text-slate-400 mb-8"
         >
-          {title || "The Debate"} - {totalTurns} speaking turns
+          {title || "The Debate"} - {participantTurns} speaking turns
         </motion.p>
 
         <motion.div
