@@ -10,8 +10,10 @@ import {
   FileText,
   X,
   Video,
+  Plus,
+  Music,
 } from "lucide-react";
-import { DebateTurn } from "@/types/debate";
+import { DebateTurn, AudioTrack } from "@/types/debate";
 import { useDebate } from "@/context/DebateContext";
 import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
@@ -30,14 +32,33 @@ interface TurnItemProps {
   index: number;
 }
 
+interface TrackConversionState {
+  trackId: string;
+  isConverting: boolean;
+  progress: ConversionProgress | null;
+  wasConverted: boolean;
+}
+
 export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
   function TurnItem({ turn, index }, forwardedRef) {
-    const { state, updateTurn, removeTurn } = useDebate();
+    const {
+      state,
+      updateTurn,
+      removeTurn,
+      addAudioTrack,
+      updateAudioTrack,
+      removeAudioTrack,
+    } = useDebate();
     const [isConverting, setIsConverting] = useState(false);
     const [conversionProgress, setConversionProgress] =
       useState<ConversionProgress | null>(null);
     const [wasConverted, setWasConverted] = useState(false);
     const [srtError, setSrtError] = useState<string | null>(null);
+
+    // Track conversion states for multiple audio tracks
+    const [trackConversions, setTrackConversions] = useState<
+      Map<string, TrackConversionState>
+    >(new Map());
 
     const {
       attributes,
@@ -62,11 +83,22 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
       (p) => p.id === turn.participantId,
     );
 
-    // For host turns: need either video OR audio
-    // For participant turns: need both participant and audio
+    // Helper to get all audio URLs
+    const getAllAudioUrls = (): string[] => {
+      const urls: string[] = [];
+      if (turn.audioUrl) urls.push(turn.audioUrl);
+      turn.audioTracks?.forEach((track) => {
+        if (track.audioUrl) urls.push(track.audioUrl);
+      });
+      return urls;
+    };
+
+    // For host turns: need either video OR at least one audio
+    // For participant turns: need both participant and at least one audio
+    const hasAnyAudio = getAllAudioUrls().length > 0;
     const isValid = turn.isHostTurn
-      ? !!(turn.videoUrl || turn.audioUrl)
-      : turn.participantId && turn.audioUrl;
+      ? !!(turn.videoUrl || hasAnyAudio)
+      : turn.participantId && hasAnyAudio;
 
     const handleAudioChange = useCallback(
       async (file: File | undefined) => {
@@ -115,14 +147,82 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
       [turn.id, updateTurn],
     );
 
+    const handleTrackAudioChange = useCallback(
+      async (trackId: string, file: File | undefined) => {
+        if (!file) {
+          updateAudioTrack(turn.id, trackId, { audioFile: undefined });
+          return;
+        }
+
+        // Check if conversion is needed
+        if (needsConversion(file)) {
+          setTrackConversions((prev) => {
+            const newMap = new Map(prev);
+            newMap.set(trackId, {
+              trackId,
+              isConverting: true,
+              progress: { stage: "decoding", progress: 0 },
+              wasConverted: false,
+            });
+            return newMap;
+          });
+
+          try {
+            const result = await convertToMp3(file, (progress) => {
+              setTrackConversions((prev) => {
+                const newMap = new Map(prev);
+                const current = newMap.get(trackId);
+                if (current) {
+                  newMap.set(trackId, { ...current, progress });
+                }
+                return newMap;
+              });
+            });
+
+            // Create a new File object from the converted blob
+            const convertedFile = new File(
+              [result.blob],
+              result.convertedName,
+              {
+                type: "audio/mpeg",
+              },
+            );
+
+            setTrackConversions((prev) => {
+              const newMap = new Map(prev);
+              newMap.set(trackId, {
+                trackId,
+                isConverting: false,
+                progress: null,
+                wasConverted: true,
+              });
+              return newMap;
+            });
+            updateAudioTrack(turn.id, trackId, { audioFile: convertedFile });
+          } catch (error) {
+            console.error("Conversion failed:", error);
+            setTrackConversions((prev) => {
+              const newMap = new Map(prev);
+              newMap.delete(trackId);
+              return newMap;
+            });
+            // Fall back to original file
+            updateAudioTrack(turn.id, trackId, { audioFile: file });
+          }
+        } else {
+          // No conversion needed
+          updateAudioTrack(turn.id, trackId, { audioFile: file });
+        }
+      },
+      [turn.id, updateAudioTrack],
+    );
+
     const handleVideoChange = useCallback(
       (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
           updateTurn(turn.id, { videoFile: file });
         }
-        // Reset input
-        e.target.value = "";
       },
       [turn.id, updateTurn],
     );
@@ -134,30 +234,30 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
     const handleSrtChange = useCallback(
       async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
+        if (!file) return;
+
         setSrtError(null);
 
-        if (!file) {
+        try {
+          updateTurn(turn.id, {
+            subtitleFile: file,
+            subtitles: [],
+          });
+
+          const subtitles = await parseSRTFile(file);
+
+          updateTurn(turn.id, {
+            subtitleFile: file,
+            subtitles,
+          });
+        } catch (error) {
+          console.error("Failed to parse SRT file:", error);
+          setSrtError("Failed to parse subtitle file");
           updateTurn(turn.id, {
             subtitleFile: undefined,
             subtitles: undefined,
           });
-          return;
         }
-
-        try {
-          const subtitles = await parseSRTFile(file);
-          if (subtitles.length === 0) {
-            setSrtError("No valid subtitles found in file");
-            return;
-          }
-          updateTurn(turn.id, { subtitleFile: file, subtitles });
-        } catch (error) {
-          console.error("Failed to parse SRT:", error);
-          setSrtError("Failed to parse subtitle file");
-        }
-
-        // Reset input
-        e.target.value = "";
       },
       [turn.id, updateTurn],
     );
@@ -167,25 +267,186 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
       setSrtError(null);
     }, [turn.id, updateTurn]);
 
-    const getProgressText = () => {
-      if (!conversionProgress) return "";
-      if (conversionProgress.stage === "decoding") {
-        return `Decoding audio... ${conversionProgress.progress}%`;
+    const handleTrackSrtChange = useCallback(
+      async (trackId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        try {
+          const subtitles = await parseSRTFile(file);
+          updateAudioTrack(turn.id, trackId, {
+            subtitleFile: file,
+            subtitles,
+          });
+        } catch (error) {
+          console.error("Failed to parse SRT file:", error);
+          // Don't update if parsing failed
+        }
+      },
+      [turn.id, updateAudioTrack],
+    );
+
+    const handleRemoveTrackSrt = useCallback(
+      (trackId: string) => {
+        updateAudioTrack(turn.id, trackId, {
+          subtitleFile: undefined,
+          subtitles: undefined,
+        });
+      },
+      [turn.id, updateAudioTrack],
+    );
+
+    const handleAddAudioTrack = useCallback(() => {
+      addAudioTrack(turn.id);
+    }, [turn.id, addAudioTrack]);
+
+    const handleRemoveTrack = useCallback(
+      (trackId: string) => {
+        removeAudioTrack(turn.id, trackId);
+        setTrackConversions((prev) => {
+          const newMap = new Map(prev);
+          newMap.delete(trackId);
+          return newMap;
+        });
+      },
+      [turn.id, removeAudioTrack],
+    );
+
+    const getProgressText = (progress: ConversionProgress | null) => {
+      if (!progress) return "Converting...";
+      switch (progress.stage) {
+        case "decoding":
+          return `Decoding audio... ${Math.round(progress.progress)}%`;
+        case "encoding":
+          return `Converting to MP3... ${Math.round(progress.progress)}%`;
+        case "complete":
+          return "Complete!";
+        default:
+          return "Converting...";
       }
-      if (conversionProgress.stage === "encoding") {
-        return `Converting to MP3... ${conversionProgress.progress}%`;
-      }
-      return "Complete!";
     };
 
-    // Combine refs for both sortable and forwardRef
-    const combinedRef = (node: HTMLDivElement | null) => {
-      setNodeRef(node);
-      if (typeof forwardedRef === "function") {
-        forwardedRef(node);
-      } else if (forwardedRef) {
-        forwardedRef.current = node;
-      }
+    const combinedRef = useCallback(
+      (node: HTMLDivElement | null) => {
+        setNodeRef(node);
+        if (typeof forwardedRef === "function") {
+          forwardedRef(node);
+        } else if (forwardedRef) {
+          forwardedRef.current = node;
+        }
+      },
+      [setNodeRef, forwardedRef],
+    );
+
+    const isAnyConverting =
+      isConverting ||
+      Array.from(trackConversions.values()).some((t) => t.isConverting);
+
+    // Render audio track item
+    const renderAudioTrack = (track: AudioTrack, trackIndex: number) => {
+      const conversionState = trackConversions.get(track.id);
+      const isTrackConverting = conversionState?.isConverting ?? false;
+      const trackProgress = conversionState?.progress ?? null;
+      const trackWasConverted = conversionState?.wasConverted ?? false;
+
+      return (
+        <div
+          key={track.id}
+          className="flex items-start gap-3 p-3 bg-slate-800/30 rounded-lg border border-white/5"
+        >
+          <div className="flex items-center gap-2 text-xs text-slate-500 pt-2">
+            <Music className="w-4 h-4" />
+            <span>#{trackIndex + 2}</span>
+          </div>
+          <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* Audio Upload */}
+            <div className="relative">
+              {isTrackConverting ? (
+                <div className="w-full flex items-center gap-3 px-4 py-3 bg-slate-800/50 border border-primary/30 rounded-lg">
+                  <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-white truncate">
+                      {getProgressText(trackProgress)}
+                    </div>
+                    <div className="mt-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-primary to-brand-teal transition-all duration-300"
+                        style={{
+                          width: `${trackProgress?.progress || 0}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="relative">
+                  <FileUpload
+                    type="audio"
+                    accept="audio/*"
+                    value={track.audioFile}
+                    previewUrl={track.audioUrl}
+                    onChange={(file) => handleTrackAudioChange(track.id, file)}
+                  />
+                  {trackWasConverted && track.audioFile && (
+                    <div className="absolute -top-2 -right-2 flex items-center gap-1 px-2 py-0.5 bg-green-500/20 border border-green-500/30 rounded-full">
+                      <CheckCircle className="w-3 h-3 text-green-400" />
+                      <span className="text-xs text-green-400">MP3</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* SRT Upload for track */}
+            <div className="relative">
+              {track.subtitleFile ? (
+                <div className="w-full flex items-center gap-3 px-4 py-3 bg-slate-800/50 border border-green-500/30 rounded-lg">
+                  <FileText className="w-5 h-5 text-green-400" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-white truncate">
+                      {track.subtitleFile.name}
+                    </div>
+                    <div className="text-xs text-green-400">
+                      {track.subtitles?.length || 0} cues
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveTrackSrt(track.id)}
+                    className="p-1 hover:bg-white/10 rounded transition-colors"
+                  >
+                    <X className="w-4 h-4 text-slate-400 hover:text-white" />
+                  </button>
+                </div>
+              ) : (
+                <label className="w-full flex items-center gap-3 px-4 py-3 bg-slate-800/50 border border-white/10 rounded-lg hover:border-green-500/50 hover:bg-slate-800/70 transition-all duration-300 cursor-pointer">
+                  <FileText className="w-5 h-5 text-slate-400" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-slate-400">Subtitles</div>
+                    <div className="text-xs text-slate-500">.srt</div>
+                  </div>
+                  <input
+                    type="file"
+                    accept=".srt,text/srt,application/x-subrip"
+                    onChange={(e) => handleTrackSrtChange(track.id, e)}
+                    className="hidden"
+                  />
+                </label>
+              )}
+            </div>
+          </div>
+
+          {/* Remove track button */}
+          <button
+            type="button"
+            onClick={() => handleRemoveTrack(track.id)}
+            className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+            disabled={isTrackConverting}
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      );
     };
 
     return (
@@ -193,14 +454,18 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
         ref={combinedRef}
         style={style}
         className={cn(
-          "glass-panel-light p-4 transition-all duration-200",
-          isDragging && "opacity-50 shadow-2xl scale-[1.02] z-50",
-          !isValid && "border-l-2 border-l-amber-500/50",
+          "relative rounded-xl border transition-all duration-300",
+          isDragging
+            ? "z-50 shadow-2xl opacity-90 border-primary/50"
+            : "border-white/10 hover:border-white/20",
+          isValid
+            ? "bg-gradient-to-r from-slate-900/50 to-slate-800/50"
+            : "bg-gradient-to-r from-slate-900/30 to-slate-800/30",
           turn.isHostTurn &&
             "border-l-2 border-l-brand-teal/50 bg-brand-teal/5",
         )}
       >
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-4 p-4">
           {/* Drag Handle */}
           <button
             {...attributes}
@@ -315,7 +580,7 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
                   <div className="flex-1 h-px bg-slate-700"></div>
                 </div>
 
-                {/* Audio Upload - Secondary for host */}
+                {/* Primary Audio Upload */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div className="relative">
                     {isConverting ? (
@@ -323,7 +588,7 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
                         <Loader2 className="w-5 h-5 text-primary animate-spin" />
                         <div className="flex-1 min-w-0">
                           <div className="text-sm text-white truncate">
-                            {getProgressText()}
+                            {getProgressText(conversionProgress)}
                           </div>
                           <div className="mt-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
                             <div
@@ -417,114 +682,166 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
                     )}
                   </div>
                 </div>
+
+                {/* Additional Audio Tracks */}
+                {turn.audioTracks && turn.audioTracks.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="text-xs text-slate-400 uppercase tracking-wider">
+                      Additional Audio Tracks
+                    </div>
+                    {turn.audioTracks.map((track, trackIndex) =>
+                      renderAudioTrack(track, trackIndex),
+                    )}
+                  </div>
+                )}
+
+                {/* Add Audio Track Button */}
+                {!turn.videoUrl && (
+                  <button
+                    type="button"
+                    onClick={handleAddAudioTrack}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-slate-800/30 border border-dashed border-slate-600 rounded-lg hover:border-primary/50 hover:bg-slate-800/50 transition-all duration-300 text-sm text-slate-400 hover:text-primary"
+                    disabled={isAnyConverting}
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Audio Track
+                  </button>
+                )}
               </div>
             ) : (
-              /* Participant Turn Layout - Original */
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {/* Participant Select */}
-                <div className="flex items-center gap-2">
-                  {selectedParticipant?.avatarUrl && (
-                    <img
-                      src={selectedParticipant.avatarUrl}
-                      alt={selectedParticipant.name}
-                      className="w-8 h-8 rounded-full object-cover border border-white/20"
+              /* Participant Turn Layout */
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {/* Participant Select */}
+                  <div className="flex items-center gap-2">
+                    {selectedParticipant?.avatarUrl && (
+                      <img
+                        src={selectedParticipant.avatarUrl}
+                        alt={selectedParticipant.name}
+                        className="w-8 h-8 rounded-full object-cover border border-white/20"
+                      />
+                    )}
+                    <Select
+                      value={turn.participantId}
+                      onChange={(value) =>
+                        updateTurn(turn.id, { participantId: value })
+                      }
+                      options={participantOptions}
+                      placeholder="Select speaker..."
+                      className="flex-1"
                     />
-                  )}
-                  <Select
-                    value={turn.participantId}
-                    onChange={(value) =>
-                      updateTurn(turn.id, { participantId: value })
-                    }
-                    options={participantOptions}
-                    placeholder="Select speaker..."
-                    className="flex-1"
-                  />
+                  </div>
+
+                  {/* Primary Audio Upload with Conversion */}
+                  <div className="relative">
+                    {isConverting ? (
+                      <div className="w-full flex items-center gap-3 px-4 py-3 bg-slate-800/50 border border-primary/30 rounded-lg">
+                        <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm text-white truncate">
+                            {getProgressText(conversionProgress)}
+                          </div>
+                          <div className="mt-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-primary to-brand-teal transition-all duration-300"
+                              style={{
+                                width: `${conversionProgress?.progress || 0}%`,
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        <FileUpload
+                          type="audio"
+                          accept="audio/*"
+                          value={turn.audioFile}
+                          previewUrl={turn.audioUrl}
+                          onChange={handleAudioChange}
+                        />
+                        {wasConverted && turn.audioFile && (
+                          <div className="absolute -top-2 -right-2 flex items-center gap-1 px-2 py-0.5 bg-green-500/20 border border-green-500/30 rounded-full">
+                            <CheckCircle className="w-3 h-3 text-green-400" />
+                            <span className="text-xs text-green-400">
+                              Converted to MP3
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* SRT Subtitle Upload */}
+                  <div className="relative">
+                    {turn.subtitleFile ? (
+                      <div className="w-full flex items-center gap-3 px-4 py-3 bg-slate-800/50 border border-green-500/30 rounded-lg">
+                        <FileText className="w-5 h-5 text-green-400" />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm text-white truncate">
+                            {turn.subtitleFile.name}
+                          </div>
+                          <div className="text-xs text-green-400">
+                            {turn.subtitles?.length || 0} subtitle cues
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleRemoveSrt}
+                          className="p-1 hover:bg-white/10 rounded transition-colors"
+                        >
+                          <X className="w-4 h-4 text-slate-400 hover:text-white" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="w-full flex items-center gap-3 px-4 py-3 bg-slate-800/50 border border-white/10 rounded-lg hover:border-green-500/50 hover:bg-slate-800/70 transition-all duration-300 cursor-pointer">
+                        <FileText className="w-5 h-5 text-slate-400" />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm text-slate-400">
+                            Upload subtitles
+                          </div>
+                          <div className="text-xs text-slate-500">
+                            .srt file
+                          </div>
+                        </div>
+                        <input
+                          type="file"
+                          accept=".srt,text/srt,application/x-subrip"
+                          onChange={handleSrtChange}
+                          className="hidden"
+                        />
+                      </label>
+                    )}
+                    {srtError && (
+                      <div className="absolute -bottom-5 left-0 text-xs text-red-400">
+                        {srtError}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                {/* Audio Upload with Conversion */}
-                <div className="relative">
-                  {isConverting ? (
-                    <div className="w-full flex items-center gap-3 px-4 py-3 bg-slate-800/50 border border-primary/30 rounded-lg">
-                      <Loader2 className="w-5 h-5 text-primary animate-spin" />
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm text-white truncate">
-                          {getProgressText()}
-                        </div>
-                        <div className="mt-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-gradient-to-r from-primary to-brand-teal transition-all duration-300"
-                            style={{
-                              width: `${conversionProgress?.progress || 0}%`,
-                            }}
-                          />
-                        </div>
-                      </div>
+                {/* Additional Audio Tracks for Participant */}
+                {turn.audioTracks && turn.audioTracks.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="text-xs text-slate-400 uppercase tracking-wider">
+                      Additional Audio Tracks
                     </div>
-                  ) : (
-                    <div className="relative">
-                      <FileUpload
-                        type="audio"
-                        accept="audio/*"
-                        value={turn.audioFile}
-                        previewUrl={turn.audioUrl}
-                        onChange={handleAudioChange}
-                      />
-                      {wasConverted && turn.audioFile && (
-                        <div className="absolute -top-2 -right-2 flex items-center gap-1 px-2 py-0.5 bg-green-500/20 border border-green-500/30 rounded-full">
-                          <CheckCircle className="w-3 h-3 text-green-400" />
-                          <span className="text-xs text-green-400">
-                            Converted to MP3
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
+                    {turn.audioTracks.map((track, trackIndex) =>
+                      renderAudioTrack(track, trackIndex),
+                    )}
+                  </div>
+                )}
 
-                {/* SRT Subtitle Upload */}
-                <div className="relative">
-                  {turn.subtitleFile ? (
-                    <div className="w-full flex items-center gap-3 px-4 py-3 bg-slate-800/50 border border-green-500/30 rounded-lg">
-                      <FileText className="w-5 h-5 text-green-400" />
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm text-white truncate">
-                          {turn.subtitleFile.name}
-                        </div>
-                        <div className="text-xs text-green-400">
-                          {turn.subtitles?.length || 0} subtitle cues
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleRemoveSrt}
-                        className="p-1 hover:bg-white/10 rounded transition-colors"
-                      >
-                        <X className="w-4 h-4 text-slate-400 hover:text-white" />
-                      </button>
-                    </div>
-                  ) : (
-                    <label className="w-full flex items-center gap-3 px-4 py-3 bg-slate-800/50 border border-white/10 rounded-lg hover:border-green-500/50 hover:bg-slate-800/70 transition-all duration-300 cursor-pointer">
-                      <FileText className="w-5 h-5 text-slate-400" />
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm text-slate-400">
-                          Upload subtitles
-                        </div>
-                        <div className="text-xs text-slate-500">.srt file</div>
-                      </div>
-                      <input
-                        type="file"
-                        accept=".srt,text/srt,application/x-subrip"
-                        onChange={handleSrtChange}
-                        className="hidden"
-                      />
-                    </label>
-                  )}
-                  {srtError && (
-                    <div className="absolute -bottom-5 left-0 text-xs text-red-400">
-                      {srtError}
-                    </div>
-                  )}
-                </div>
+                {/* Add Audio Track Button for Participant */}
+                <button
+                  type="button"
+                  onClick={handleAddAudioTrack}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-slate-800/30 border border-dashed border-slate-600 rounded-lg hover:border-primary/50 hover:bg-slate-800/50 transition-all duration-300 text-sm text-slate-400 hover:text-primary"
+                  disabled={isAnyConverting}
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Audio Track
+                </button>
               </div>
             )}
           </div>
@@ -535,7 +852,7 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
             size="icon"
             onClick={() => removeTurn(turn.id)}
             className="flex-shrink-0 text-slate-400 hover:text-red-400 hover:bg-red-500/10"
-            disabled={isConverting}
+            disabled={isAnyConverting}
           >
             <Trash2 className="w-4 h-4" />
           </Button>

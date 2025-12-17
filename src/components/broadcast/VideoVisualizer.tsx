@@ -31,6 +31,28 @@ export function VideoVisualizer({
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
   const [isAudioConnected, setIsAudioConnected] = useState(false);
 
+  // Setup canvas with proper DPR handling
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const dpr = window.devicePixelRatio || 1;
+
+    // Set the canvas internal size (actual pixels)
+    canvas.width = size * dpr;
+    canvas.height = size * dpr;
+
+    // Set the canvas display size (CSS pixels)
+    canvas.style.width = `${size}px`;
+    canvas.style.height = `${size}px`;
+
+    // Scale the context to account for DPR
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+      ctx.scale(dpr, dpr);
+    }
+  }, [size]);
+
   // Initialize audio context and connect video to analyser
   useEffect(() => {
     const video = videoRef.current;
@@ -143,13 +165,20 @@ export function VideoVisualizer({
       return;
     }
 
-    // Clear canvas
+    // Clear canvas (use scaled dimensions)
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform for clearing
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
 
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const videoRadius = Math.min(canvas.width, canvas.height) / 2 - 50; // Leave room for visualizer
-    const visualizerRadius = videoRadius + 20;
+    // All drawing uses CSS pixel coordinates (context is already scaled)
+    const centerX = size / 2;
+    const centerY = size / 2;
+
+    // Avatar is 280px, video should fit inside that
+    const avatarRadius = 140; // Half of 280px avatar
+    const videoRadius = avatarRadius - 10; // Video slightly inside avatar bounds
+    const visualizerRadius = avatarRadius + 10; // Ring sits outside avatar
     const barCount = 64;
     const barWidth = 3;
     const maxBarHeight = 30;
@@ -328,7 +357,7 @@ export function VideoVisualizer({
 
   return (
     <div
-      className={cn("relative", className)}
+      className={cn("relative flex items-center justify-center", className)}
       style={{ width: size, height: size }}
     >
       {/* Video element - not hidden, but positioned behind canvas */}
@@ -341,16 +370,10 @@ export function VideoVisualizer({
         crossOrigin="anonymous"
       />
 
-      {/* Canvas with video and visualizer */}
+      {/* Canvas with video and visualizer - centered */}
       <canvas
         ref={canvasRef}
-        width={size}
-        height={size}
-        className="absolute inset-0"
-        style={{
-          width: size,
-          height: size,
-        }}
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
       />
     </div>
   );

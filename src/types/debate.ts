@@ -19,13 +19,24 @@ export interface SubtitleCue {
   text: string;
 }
 
+export interface AudioTrack {
+  id: string;
+  audioFile?: File;
+  audioUrl?: string;
+  subtitleFile?: File;
+  subtitles?: SubtitleCue[];
+}
+
 export interface DebateTurn {
   id: string;
   title: string;
   participantId: string; // Empty string for host turns
   isHostTurn: boolean; // True if this is a host speech
+  // Legacy single audio support (for backward compatibility)
   audioFile?: File;
   audioUrl?: string;
+  // Multiple audio tracks support
+  audioTracks?: AudioTrack[];
   videoFile?: File; // Optional video file for this turn (host only)
   videoUrl?: string; // Optional video URL for this turn (host only)
   subtitleFile?: File;
@@ -59,6 +70,13 @@ export interface DebateContextType {
   addHostTurn: () => void;
   updateTurn: (id: string, updates: Partial<Omit<DebateTurn, "id">>) => void;
   removeTurn: (id: string) => void;
+  addAudioTrack: (turnId: string) => void;
+  updateAudioTrack: (
+    turnId: string,
+    trackId: string,
+    updates: Partial<Omit<AudioTrack, "id">>,
+  ) => void;
+  removeAudioTrack: (turnId: string, trackId: string) => void;
   reorderTurns: (activeId: string, overId: string) => void;
   setCurrentTurnIndex: (index: number) => void;
   setIsPlaying: (playing: boolean) => void;

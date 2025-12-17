@@ -20,29 +20,61 @@ export function CircularVisualizer({
   const animationFrameRef = useRef<number | null>(null);
   const dataArrayRef = useRef<Uint8Array<ArrayBuffer> | null>(null);
 
+  // Setup canvas with proper DPR handling
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const dpr = window.devicePixelRatio || 1;
+
+    // Set the canvas internal size (actual pixels)
+    canvas.width = size * dpr;
+    canvas.height = size * dpr;
+
+    // Set the canvas display size (CSS pixels)
+    canvas.style.width = `${size}px`;
+    canvas.style.height = `${size}px`;
+
+    // Scale the context to account for DPR
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+      ctx.scale(dpr, dpr);
+    }
+  }, [size]);
+
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
 
-    if (!canvas || !ctx || !analyserNode) {
+    if (!canvas || !ctx) {
       animationFrameRef.current = requestAnimationFrame(draw);
       return;
     }
 
     // Initialize data array if needed
-    if (!dataArrayRef.current) {
+    if (analyserNode && !dataArrayRef.current) {
       dataArrayRef.current = new Uint8Array(analyserNode.frequencyBinCount);
     }
 
-    // Get frequency data
-    analyserNode.getByteFrequencyData(dataArrayRef.current);
+    // Get frequency data if available
+    if (analyserNode && dataArrayRef.current) {
+      analyserNode.getByteFrequencyData(dataArrayRef.current);
+    }
 
-    // Clear canvas
+    // Clear canvas (use scaled dimensions)
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform for clearing
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
 
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const radius = Math.min(canvas.width, canvas.height) / 2 - 20;
+    // All drawing uses CSS pixel coordinates (context is already scaled)
+    const centerX = size / 2;
+    const centerY = size / 2;
+
+    // Avatar is 280px, so radius should be half of that (140px)
+    // The ring should sit just outside the avatar
+    const avatarRadius = 140; // Half of 280px avatar
+    const ringRadius = avatarRadius + 10; // Ring sits 10px outside avatar edge
     const barCount = 64;
     const barWidth = 3;
     const maxBarHeight = 30;
@@ -73,11 +105,15 @@ export function CircularVisualizer({
 
     // Draw circular visualizer bars
     for (let i = 0; i < barCount; i++) {
-      const dataIndex = Math.floor(
-        (i / barCount) * dataArrayRef.current.length,
-      );
-      const value = dataArrayRef.current[dataIndex];
-      const normalizedValue = value / 255;
+      let normalizedValue = 0;
+
+      if (dataArrayRef.current && dataArrayRef.current.length > 0) {
+        const dataIndex = Math.floor(
+          (i / barCount) * dataArrayRef.current.length,
+        );
+        const value = dataArrayRef.current[dataIndex];
+        normalizedValue = value / 255;
+      }
 
       // Apply activity modifier
       const activityMultiplier = isActive ? 1 : 0.1;
@@ -85,8 +121,8 @@ export function CircularVisualizer({
 
       const angle = (i / barCount) * Math.PI * 2 - Math.PI / 2;
 
-      const innerRadius = radius;
-      const outerRadius = radius + barHeight;
+      const innerRadius = ringRadius;
+      const outerRadius = ringRadius + barHeight;
 
       const x1 = centerX + Math.cos(angle) * innerRadius;
       const y1 = centerY + Math.sin(angle) * innerRadius;
@@ -117,21 +153,21 @@ export function CircularVisualizer({
     // Draw glowing ring when active
     if (isActive) {
       ctx.beginPath();
-      ctx.arc(centerX, centerY, radius - 2, 0, Math.PI * 2);
+      ctx.arc(centerX, centerY, ringRadius - 2, 0, Math.PI * 2);
       ctx.strokeStyle = colorConfig.ring;
       ctx.lineWidth = 2;
       ctx.stroke();
 
       // Add outer glow
       ctx.beginPath();
-      ctx.arc(centerX, centerY, radius + maxBarHeight + 5, 0, Math.PI * 2);
+      ctx.arc(centerX, centerY, ringRadius + maxBarHeight + 5, 0, Math.PI * 2);
       ctx.strokeStyle = colorConfig.outerGlow;
       ctx.lineWidth = 1;
       ctx.stroke();
     }
 
     animationFrameRef.current = requestAnimationFrame(draw);
-  }, [analyserNode, isActive, color]);
+  }, [analyserNode, isActive, color, size]);
 
   useEffect(() => {
     animationFrameRef.current = requestAnimationFrame(draw);

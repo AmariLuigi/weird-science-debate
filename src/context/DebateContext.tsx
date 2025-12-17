@@ -12,6 +12,7 @@ import {
   ViewMode,
   DebateContextType,
   Host,
+  AudioTrack,
 } from "@/types/debate";
 import { generateId } from "@/lib/utils";
 
@@ -141,6 +142,7 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
       title: "",
       participantId: "",
       isHostTurn: false,
+      audioTracks: [],
     };
     setState((prev) => ({
       ...prev,
@@ -154,6 +156,7 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
       title: "",
       participantId: HOST_ID,
       isHostTurn: true,
+      audioTracks: [],
     };
     setState((prev) => ({
       ...prev,
@@ -218,12 +221,98 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
       if (turn?.videoUrl) {
         URL.revokeObjectURL(turn.videoUrl);
       }
+      // Revoke all audio track URLs
+      turn?.audioTracks?.forEach((track) => {
+        if (track.audioUrl) {
+          URL.revokeObjectURL(track.audioUrl);
+        }
+      });
 
       return {
         ...prev,
         turns: prev.turns.filter((t) => t.id !== id),
       };
     });
+  }, []);
+
+  const addAudioTrack = useCallback((turnId: string) => {
+    const newTrack: AudioTrack = {
+      id: generateId(),
+    };
+    setState((prev) => ({
+      ...prev,
+      turns: prev.turns.map((t) => {
+        if (t.id !== turnId) return t;
+        return {
+          ...t,
+          audioTracks: [...(t.audioTracks || []), newTrack],
+        };
+      }),
+    }));
+  }, []);
+
+  const updateAudioTrack = useCallback(
+    (
+      turnId: string,
+      trackId: string,
+      updates: Partial<Omit<AudioTrack, "id">>,
+    ) => {
+      setState((prev) => ({
+        ...prev,
+        turns: prev.turns.map((t) => {
+          if (t.id !== turnId) return t;
+          return {
+            ...t,
+            audioTracks: (t.audioTracks || []).map((track) => {
+              if (track.id !== trackId) return track;
+
+              // Handle audio URL creation/cleanup
+              let newAudioUrl = track.audioUrl;
+              if (updates.audioFile !== undefined) {
+                // Revoke old URL if exists
+                if (track.audioUrl) {
+                  URL.revokeObjectURL(track.audioUrl);
+                }
+                // Create new URL if file exists
+                newAudioUrl = updates.audioFile
+                  ? URL.createObjectURL(updates.audioFile)
+                  : undefined;
+              }
+
+              return {
+                ...track,
+                ...updates,
+                audioUrl:
+                  updates.audioFile !== undefined
+                    ? newAudioUrl
+                    : track.audioUrl,
+              };
+            }),
+          };
+        }),
+      }));
+    },
+    [],
+  );
+
+  const removeAudioTrack = useCallback((turnId: string, trackId: string) => {
+    setState((prev) => ({
+      ...prev,
+      turns: prev.turns.map((t) => {
+        if (t.id !== turnId) return t;
+
+        // Find and revoke the audio URL before removing
+        const track = t.audioTracks?.find((tr) => tr.id === trackId);
+        if (track?.audioUrl) {
+          URL.revokeObjectURL(track.audioUrl);
+        }
+
+        return {
+          ...t,
+          audioTracks: (t.audioTracks || []).filter((tr) => tr.id !== trackId),
+        };
+      }),
+    }));
   }, []);
 
   const reorderTurns = useCallback((activeId: string, overId: string) => {
@@ -270,20 +359,41 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
+  // Helper function to get all audio URLs for a turn (legacy + tracks)
+  const getTurnAudioUrls = (turn: DebateTurn): string[] => {
+    const urls: string[] = [];
+    // Legacy single audio
+    if (turn.audioUrl) {
+      urls.push(turn.audioUrl);
+    }
+    // Audio tracks
+    if (turn.audioTracks) {
+      turn.audioTracks.forEach((track) => {
+        if (track.audioUrl) {
+          urls.push(track.audioUrl);
+        }
+      });
+    }
+    return urls;
+  };
+
   const canStartDebate = useMemo(() => {
     if (state.participants.length === 0) return false;
     if (state.turns.length === 0) return false;
 
     return state.turns.every((turn) => {
-      // For host turns, need either video OR audio
+      // Get all audio URLs for this turn
+      const audioUrls = getTurnAudioUrls(turn);
+      const hasAudio = audioUrls.length > 0;
+
+      // For host turns, need either video OR at least one audio
       if (turn.isHostTurn) {
-        return !!(turn.videoUrl || turn.audioUrl);
+        return !!(turn.videoUrl || hasAudio);
       }
-      // For participant turns, check both participant and audio
+      // For participant turns, check both participant and at least one audio
       const hasParticipant =
         turn.participantId &&
         state.participants.some((p) => p.id === turn.participantId);
-      const hasAudio = !!turn.audioUrl;
       return hasParticipant && hasAudio;
     });
   }, [state.participants, state.turns]);
@@ -301,6 +411,9 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
     addHostTurn,
     updateTurn,
     removeTurn,
+    addAudioTrack,
+    updateAudioTrack,
+    removeAudioTrack,
     reorderTurns,
     setCurrentTurnIndex,
     setIsPlaying,

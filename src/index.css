@@ -170,3 +170,179 @@
         transform: translateY(0);
     }
 }
+
+/* ========================================
+   BROADCAST LAYOUT SYSTEM
+   ======================================== */
+
+:root {
+    /* Broadcast layout spacing tokens */
+    --broadcast-rail-width: 120px;
+    --broadcast-rail-padding: 2rem;
+    --broadcast-dock-height: clamp(100px, 15vh, 180px);
+    --broadcast-dock-padding: 2rem;
+    --broadcast-stage-gap: 1.5rem;
+
+    /* Avatar sizes */
+    --avatar-active-size: 280px;
+    --avatar-inactive-size: 80px;
+    --visualizer-padding: 100px;
+}
+
+/* Main broadcast grid container */
+.broadcast-grid {
+    display: grid;
+    grid-template-columns: var(--broadcast-rail-width) 1fr;
+    grid-template-rows: 1fr var(--broadcast-dock-height);
+    grid-template-areas:
+        "rail stage"
+        "rail dock";
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+/* Left rail - inactive participants */
+.broadcast-rail {
+    grid-area: rail;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: var(--broadcast-rail-padding) 0;
+    z-index: 20;
+}
+
+/* Center stage - active speaker */
+.broadcast-stage {
+    grid-area: stage;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    overflow: visible;
+}
+
+/* Stage inner container - holds avatar + name with controlled spacing */
+.broadcast-stage-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--broadcast-stage-gap);
+    overflow: visible;
+}
+
+/* Visualizer container with fixed dimensions - uses flexbox for centering */
+.broadcast-visualizer {
+    position: relative;
+    width: calc(var(--avatar-active-size) + var(--visualizer-padding));
+    height: calc(var(--avatar-active-size) + var(--visualizer-padding));
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+}
+
+/* Bottom dock - subtitles */
+.broadcast-dock {
+    grid-area: dock;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 0 var(--broadcast-dock-padding);
+    z-index: 15;
+    overflow: hidden;
+}
+
+/* Dock inner container for max-width control */
+.broadcast-dock-inner {
+    width: 100%;
+    max-width: 48rem; /* 768px = max-w-3xl */
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+/* Inactive avatar in rail */
+.broadcast-inactive-avatar {
+    width: var(--avatar-inactive-size);
+    height: var(--avatar-inactive-size);
+    border-radius: 9999px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+/* Active avatar centered in visualizer */
+.broadcast-active-avatar {
+    position: relative;
+    width: var(--avatar-active-size);
+    height: var(--avatar-active-size);
+    border-radius: 9999px;
+    overflow: hidden;
+    flex-shrink: 0;
+    z-index: 1;
+}
+
+/* Speaker name container - fixed height to prevent layout shift */
+.broadcast-speaker-name {
+    text-align: center;
+    min-height: 3.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* ========================================
+   DEBUG MODE - Layout visualization
+   ======================================== */
+
+.debug-layout .broadcast-rail {
+    outline: 2px dashed rgba(239, 68, 68, 0.7);
+    outline-offset: -2px;
+}
+
+.debug-layout .broadcast-stage {
+    outline: 2px dashed rgba(34, 197, 94, 0.7);
+    outline-offset: -2px;
+}
+
+.debug-layout .broadcast-dock {
+    outline: 2px dashed rgba(59, 130, 246, 0.7);
+    outline-offset: -2px;
+}
+
+.debug-layout .broadcast-visualizer {
+    outline: 1px solid rgba(168, 85, 247, 0.5);
+}
+
+/* ========================================
+   RESPONSIVE ADJUSTMENTS
+   ======================================== */
+
+@media (max-width: 768px) {
+    :root {
+        --broadcast-rail-width: 80px;
+        --avatar-active-size: 200px;
+        --avatar-inactive-size: 60px;
+        --visualizer-padding: 80px;
+        --broadcast-dock-height: clamp(80px, 12vh, 140px);
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --broadcast-rail-width: 60px;
+        --avatar-active-size: 160px;
+        --avatar-inactive-size: 48px;
+        --visualizer-padding: 60px;
+    }
+
+    .broadcast-grid {
+        grid-template-columns: var(--broadcast-rail-width) 1fr;
+    }
+}
