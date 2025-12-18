@@ -233,18 +233,57 @@ export function OutroSequence({
           </span>
         </div>
         <div className="flex flex-wrap justify-center gap-4 text-lg">
-          <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg">
+          <motion.div
+            className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-transparent"
+            animate={{
+              scale: [1, 1.05, 1],
+              borderColor: ["rgba(12, 242, 93, 0)", "rgba(12, 242, 93, 0.5)", "rgba(12, 242, 93, 0)"],
+              boxShadow: ["0 0 0px rgba(12, 242, 93, 0)", "0 0 15px rgba(12, 242, 93, 0.3)", "0 0 0px rgba(12, 242, 93, 0)"],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              delay: 1.5,
+              ease: "easeInOut",
+            }}
+          >
             <ThumbsUp className="w-5 h-5 text-primary" />
             <span className="text-slate-300">Like</span>
-          </div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg">
-            <Bell className="w-5 h-5 text-primary" />
+          </motion.div>
+          <motion.div
+            className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-transparent"
+            animate={{
+              scale: [1, 1.05, 1],
+              borderColor: ["rgba(239, 68, 68, 0)", "rgba(239, 68, 68, 0.5)", "rgba(239, 68, 68, 0)"],
+              boxShadow: ["0 0 0px rgba(239, 68, 68, 0)", "0 0 15px rgba(239, 68, 68, 0.3)", "0 0 0px rgba(239, 68, 68, 0)"],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              delay: 2,
+              ease: "easeInOut",
+            }}
+          >
+            <Bell className="w-5 h-5 text-red-500" />
             <span className="text-slate-300">Subscribe</span>
-          </div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg">
+          </motion.div>
+          <motion.div
+            className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-transparent"
+            animate={{
+              scale: [1, 1.05, 1],
+              borderColor: ["rgba(12, 242, 93, 0)", "rgba(12, 242, 93, 0.5)", "rgba(12, 242, 93, 0)"],
+              boxShadow: ["0 0 0px rgba(12, 242, 93, 0)", "0 0 15px rgba(12, 242, 93, 0.3)", "0 0 0px rgba(12, 242, 93, 0)"],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              delay: 2.5,
+              ease: "easeInOut",
+            }}
+          >
             <MessageSquare className="w-5 h-5 text-primary" />
             <span className="text-slate-300">Comment</span>
-          </div>
+          </motion.div>
         </div>
       </motion.div>
 
