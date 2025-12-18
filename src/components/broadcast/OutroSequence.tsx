@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Youtube, MessageSquare, ThumbsUp, Bell, Sparkles } from "lucide-react";
+import { Youtube, MessageSquare, ThumbsUp, Bell, Sparkles } from "lucide-react";
 import { Participant, Host } from "@/types/debate";
 import { Button } from "@/components/ui/Button";
 
@@ -91,48 +91,52 @@ export function OutroSequence({
   // Memoize content section to prevent re-render when video states change
   const contentSection = useMemo(() => (
     <>
-      {/* Trophy icon only shown when no video */}
+      {/* Logo shown when no video */}
       {!outroVideoUrl && (
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, type: "spring" }}
-          className="mb-6"
+          className="mb-6 flex items-center justify-center"
         >
           <motion.div
+            className="relative"
             animate={{
-              rotate: [0, 10, -10, 0],
-              scale: [1, 1.1, 1],
+              scale: [1, 1.03, 1],
             }}
             transition={{
               duration: 2,
               repeat: Infinity,
               ease: "easeInOut",
             }}
-            className="inline-block p-6 bg-gradient-to-br from-primary/20 to-brand-teal/20 rounded-full"
           >
-            <Trophy className="w-16 h-16 text-primary" />
+            {/* Glow backdrop behind logo */}
+            <motion.div
+              className="absolute inset-0 -z-10 blur-3xl"
+              style={{
+                background: "radial-gradient(ellipse, rgba(65, 242, 143, 0.4) 0%, transparent 70%)",
+                transform: "scale(1.5)",
+              }}
+              animate={{
+                opacity: [0.4, 0.8, 0.4],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+            <motion.img
+              src="/LOGO.svg"
+              alt="Weird Science"
+              className="w-[180px] md:w-[220px] h-auto drop-shadow-2xl"
+              style={{
+                filter: "drop-shadow(0 0 20px rgba(65, 242, 143, 0.3))",
+              }}
+            />
           </motion.div>
         </motion.div>
       )}
-
-      <motion.h1
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="text-4xl md:text-5xl font-bold gradient-brand-text mb-4"
-      >
-        Debate Complete!
-      </motion.h1>
-
-      <motion.p
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="text-xl text-slate-400 mb-8"
-      >
-        {title || "The Debate"} - {participantTurns} speaking turns
-      </motion.p>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -244,17 +248,7 @@ export function OutroSequence({
         </div>
       </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.3 }}
-        className="flex items-center justify-center gap-3"
-      >
-        <Button variant="secondary" onClick={onReplay}>
-          Replay Debate
-        </Button>
-        <Button onClick={onBackToSetup}>Back to Setup</Button>
-      </motion.div>
+
 
       <motion.div
         initial={{ opacity: 0 }}
@@ -320,8 +314,8 @@ export function OutroSequence({
     </motion.div>
   ), [outroVideoUrl]);
 
-  // Trophy overlay - separate from video to control independently
-  const trophyOverlay = (
+  // Logo overlay - separate from video to control independently
+  const logoOverlay = (
     <motion.div
       initial={{ opacity: 0, scale: 0.5 }}
       animate={{
@@ -343,10 +337,11 @@ export function OutroSequence({
       }}
       title="Click to replay video"
     >
+      {/* Logo container with glow effect */}
       <motion.div
+        className="relative"
         animate={{
-          rotate: [0, 10, -10, 0],
-          scale: [1, 1.1, 1],
+          scale: [1, 1.03, 1],
         }}
         transition={{
           duration: 2,
@@ -354,7 +349,32 @@ export function OutroSequence({
           ease: "easeInOut",
         }}
       >
-        <Trophy className="w-32 h-32 md:w-40 md:h-40 text-primary drop-shadow-lg" />
+        {/* Glow backdrop behind logo */}
+        <motion.div
+          className="absolute inset-0 -z-10 blur-3xl"
+          style={{
+            background: "radial-gradient(ellipse, rgba(65, 242, 143, 0.4) 0%, transparent 70%)",
+            transform: "scale(1.5)",
+          }}
+          animate={{
+            opacity: [0.4, 0.8, 0.4],
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+
+        {/* The actual logo */}
+        <motion.img
+          src="/LOGO.svg"
+          alt="Weird Science"
+          className="w-[200px] md:w-[280px] h-auto drop-shadow-2xl"
+          style={{
+            filter: "drop-shadow(0 0 30px rgba(65, 242, 143, 0.3))",
+          }}
+        />
       </motion.div>
     </motion.div>
   );
@@ -416,15 +436,27 @@ export function OutroSequence({
           {/* Right column: Video with trophy overlay */}
           <div className="flex-1 flex items-center justify-center relative">
             {videoSection}
-            {trophyOverlay}
+            {logoOverlay}
           </div>
         </div>
       ) : (
-        // Single column layout when no video
         <div className="relative z-10 text-center px-8 max-w-2xl">
           {contentSection}
         </div>
       )}
+
+      {/* Hidden controls - appear on hover at bottom */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 group">
+        {/* Invisible hover trigger zone */}
+        <div className="h-16" />
+        {/* Buttons container - slides up on hover */}
+        <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-3 p-4 bg-slate-950/90 backdrop-blur-sm border-t border-white/10 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+          <Button variant="secondary" onClick={onReplay}>
+            Replay Debate
+          </Button>
+          <Button onClick={onBackToSetup}>Back to Setup</Button>
+        </div>
+      </div>
     </div>
   );
 }

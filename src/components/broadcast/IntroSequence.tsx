@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, SkipForward } from "lucide-react";
+import { SkipForward } from "lucide-react";
 import { Participant, Host, DebateTurn } from "@/types/debate";
 
 interface IntroSequenceProps {
@@ -13,6 +13,34 @@ interface IntroSequenceProps {
   introMusicVolume?: number;
 }
 
+// Floating particle component for visual effect
+function FloatingParticle({ delay, duration, size, x, y }: { delay: number; duration: number; size: number; x: number; y: number }) {
+  return (
+    <motion.div
+      className="absolute rounded-full bg-primary/40"
+      style={{
+        width: size,
+        height: size,
+        left: `${x}%`,
+        top: `${y}%`,
+      }}
+      initial={{ opacity: 0, scale: 0 }}
+      animate={{
+        opacity: [0, 0.8, 0],
+        scale: [0, 1, 0.5],
+        y: [-20, -60],
+        x: [0, (Math.random() - 0.5) * 40],
+      }}
+      transition={{
+        duration,
+        delay,
+        repeat: Infinity,
+        ease: "easeOut",
+      }}
+    />
+  );
+}
+
 export function IntroSequence({
   title,
   participants,
@@ -23,7 +51,7 @@ export function IntroSequence({
   const [showSkip, setShowSkip] = useState(false);
   const [currentParticipantIndex, setCurrentParticipantIndex] = useState(-1);
 
-  const baseDelay = 1500;
+  const baseDelay = 2500; // Extended for logo reveal
   const participantDelay = 800;
   const topicDelay = 600;
 
@@ -86,26 +114,62 @@ export function IntroSequence({
     .map((t) => t.title)
     .slice(0, 5);
 
+  // Generate particles for visual effect
+  const particles = Array.from({ length: 12 }, (_, i) => ({
+    delay: i * 0.2,
+    duration: 2 + Math.random() * 1.5,
+    size: 4 + Math.random() * 8,
+    x: 20 + Math.random() * 60,
+    y: 40 + Math.random() * 30,
+  }));
+
   return (
     <div className="fixed inset-0 z-50 bg-slate-950 flex items-center justify-center overflow-hidden">
+      {/* Animated background layers */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-b from-brand-dark/30 via-transparent to-brand-dark/30" />
+
+        {/* Primary glow */}
         <motion.div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full"
           style={{
             background:
-              "radial-gradient(circle, rgba(2, 115, 94, 0.2) 0%, transparent 70%)",
+              "radial-gradient(circle, rgba(2, 115, 94, 0.25) 0%, transparent 70%)",
           }}
           animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3],
+            scale: [1, 1.3, 1],
+            opacity: [0.3, 0.6, 0.3],
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+
+        {/* Secondary glow - offset */}
+        <motion.div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(65, 242, 143, 0.15) 0%, transparent 60%)",
+          }}
+          animate={{
+            scale: [1.2, 1, 1.2],
+            opacity: [0.2, 0.4, 0.2],
           }}
           transition={{
             duration: 4,
             repeat: Infinity,
             ease: "easeInOut",
+            delay: 0.5,
           }}
         />
+
+        {/* Particles during branding phase */}
+        {phase === "branding" && particles.map((p, i) => (
+          <FloatingParticle key={i} {...p} />
+        ))}
       </div>
 
       <div className="relative z-10 text-center px-8 max-w-4xl">
@@ -113,23 +177,72 @@ export function IntroSequence({
           {phase === "branding" && (
             <motion.div
               key="branding"
-              initial={{ opacity: 0, scale: 0.8 }}
+              initial={{ opacity: 0, scale: 0.6 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.1 }}
-              transition={{ duration: 0.5 }}
+              exit={{ opacity: 0, scale: 1.15, filter: "blur(10px)" }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
               className="flex flex-col items-center"
             >
+              {/* Logo container with glow effect */}
               <motion.div
-                animate={{ rotate: [0, 360] }}
-                transition={{ duration: 3, ease: "linear", repeat: Infinity }}
-                className="mb-8"
+                className="relative mb-6"
+                animate={{
+                  scale: [1, 1.03, 1],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
               >
-                <Sparkles className="w-24 h-24 text-primary" />
+                {/* Glow backdrop behind logo */}
+                <motion.div
+                  className="absolute inset-0 -z-10 blur-3xl"
+                  style={{
+                    background: "radial-gradient(ellipse, rgba(65, 242, 143, 0.4) 0%, transparent 70%)",
+                    transform: "scale(1.5)",
+                  }}
+                  animate={{
+                    opacity: [0.4, 0.8, 0.4],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                />
+
+                {/* The actual logo */}
+                <motion.img
+                  src="/LOGO.svg"
+                  alt="Weird Science"
+                  className="w-[400px] md:w-[500px] h-auto drop-shadow-2xl"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+                  style={{
+                    filter: "drop-shadow(0 0 30px rgba(65, 242, 143, 0.3))",
+                  }}
+                />
               </motion.div>
-              <h2 className="text-4xl md:text-5xl font-bold text-brand-sea">
-                Weird Science
-              </h2>
-              <p className="text-xl text-slate-400 mt-3">presents</p>
+
+              {/* "presents" text with cinematic reveal */}
+              <motion.p
+                className="text-2xl md:text-3xl text-slate-300 font-light tracking-widest uppercase"
+                initial={{ opacity: 0, letterSpacing: "0.5em" }}
+                animate={{ opacity: 1, letterSpacing: "0.3em" }}
+                transition={{ duration: 1, delay: 0.6, ease: "easeOut" }}
+              >
+                presents
+              </motion.p>
+
+              {/* Animated line under "presents" */}
+              <motion.div
+                className="h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent mt-4"
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: "200px", opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.8, ease: "easeOut" }}
+              />
             </motion.div>
           )}
 
