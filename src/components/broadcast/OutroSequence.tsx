@@ -120,7 +120,7 @@ export function OutroSequence({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="text-2xl md:text-3xl font-bold gradient-brand-text mb-2"
+        className="text-4xl md:text-5xl font-bold gradient-brand-text mb-4"
       >
         Debate Complete!
       </motion.h1>
@@ -129,7 +129,7 @@ export function OutroSequence({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className="text-base text-slate-400 mb-6"
+        className="text-xl text-slate-400 mb-8"
       >
         {title || "The Debate"} - {participantTurns} speaking turns
       </motion.p>
@@ -140,7 +140,7 @@ export function OutroSequence({
         transition={{ delay: 0.7 }}
         className="mb-6"
       >
-        <h3 className="text-sm text-slate-500 mb-3">Thank you to our participants</h3>
+        <h3 className="text-lg text-slate-400 mb-4">Thank you to our participants</h3>
         <div className="flex flex-wrap justify-center gap-3">
           {participants.map((participant, index) => (
             <motion.div
@@ -150,7 +150,7 @@ export function OutroSequence({
               transition={{ delay: 0.8 + index * 0.1 }}
               className="flex flex-col items-center"
             >
-              <div className="w-12 h-12 rounded-full border-2 border-primary/50 overflow-hidden mb-1 bg-gradient-to-br from-primary/20 to-brand-teal/20">
+              <div className="w-16 h-16 rounded-full border-2 border-primary/50 overflow-hidden mb-2 bg-gradient-to-br from-primary/20 to-brand-teal/20">
                 {participant.avatarUrl ? (
                   <img
                     src={participant.avatarUrl}
@@ -159,13 +159,13 @@ export function OutroSequence({
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-lg font-bold text-white/80">
+                    <span className="text-xl font-bold text-white/80">
                       {participant.name?.charAt(0)?.toUpperCase() || "?"}
                     </span>
                   </div>
                 )}
               </div>
-              <span className="text-xs text-white font-medium">
+              <span className="text-base text-white font-medium">
                 {participant.name || "Participant"}
               </span>
             </motion.div>
@@ -178,24 +178,24 @@ export function OutroSequence({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.9 }}
-        className="glass-panel p-4 mb-4"
+        className="glass-panel p-5 mb-5"
       >
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <MessageSquare className="w-5 h-5 text-primary" />
-          <span className="text-lg font-semibold text-white">
+        <div className="flex items-center justify-center gap-2 mb-3">
+          <MessageSquare className="w-7 h-7 text-primary" />
+          <span className="text-2xl font-semibold text-white">
             Who Won?
           </span>
         </div>
-        <p className="text-sm text-slate-400 mb-3">
+        <p className="text-lg text-slate-400 mb-4">
           Drop a comment and let us know which side made the stronger case!
         </p>
         <div className="flex flex-wrap justify-center gap-2">
           {participants.map((participant) => (
             <div
               key={participant.id}
-              className="flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-primary/30 rounded-lg transition-all cursor-pointer"
+              className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-primary/30 rounded-lg transition-all cursor-pointer"
             >
-              <div className="w-5 h-5 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-brand-teal/20">
+              <div className="w-6 h-6 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-brand-teal/20">
                 {participant.avatarUrl ? (
                   <img
                     src={participant.avatarUrl}
@@ -204,13 +204,13 @@ export function OutroSequence({
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-xs font-bold text-white/80">
+                    <span className="text-sm font-bold text-white/80">
                       {participant.name?.charAt(0)?.toUpperCase() || "?"}
                     </span>
                   </div>
                 )}
               </div>
-              <span className="text-sm text-white">{participant.name}</span>
+              <span className="text-lg text-white">{participant.name}</span>
             </div>
           ))}
         </div>
@@ -220,25 +220,25 @@ export function OutroSequence({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.1 }}
-        className="glass-panel p-4 mb-6"
+        className="glass-panel p-5 mb-6"
       >
-        <div className="flex items-center justify-center gap-2 mb-3">
-          <Youtube className="w-5 h-5 text-red-500" />
-          <span className="text-base font-semibold text-white">
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <Youtube className="w-7 h-7 text-red-500" />
+          <span className="text-xl font-semibold text-white">
             Enjoyed this debate?
           </span>
         </div>
-        <div className="flex flex-wrap justify-center gap-3 text-sm">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-lg">
-            <ThumbsUp className="w-4 h-4 text-primary" />
+        <div className="flex flex-wrap justify-center gap-4 text-lg">
+          <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg">
+            <ThumbsUp className="w-5 h-5 text-primary" />
             <span className="text-slate-300">Like</span>
           </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-lg">
-            <Bell className="w-4 h-4 text-primary" />
+          <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg">
+            <Bell className="w-5 h-5 text-primary" />
             <span className="text-slate-300">Subscribe</span>
           </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-lg">
-            <MessageSquare className="w-4 h-4 text-primary" />
+          <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg">
+            <MessageSquare className="w-5 h-5 text-primary" />
             <span className="text-slate-300">Comment</span>
           </div>
         </div>
@@ -250,10 +250,10 @@ export function OutroSequence({
         transition={{ delay: 1.3 }}
         className="flex items-center justify-center gap-3"
       >
-        <Button variant="secondary" size="sm" onClick={onReplay}>
+        <Button variant="secondary" onClick={onReplay}>
           Replay Debate
         </Button>
-        <Button size="sm" onClick={onBackToSetup}>Back to Setup</Button>
+        <Button onClick={onBackToSetup}>Back to Setup</Button>
       </motion.div>
 
       <motion.div
