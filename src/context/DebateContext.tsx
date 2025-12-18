@@ -378,6 +378,47 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
     setState((prev) => ({ ...prev, template }));
   }, []);
 
+  const loadFlowTemplate = useCallback((templateId: string) => {
+    // Import FLOW_TEMPLATES dynamically to avoid circular dependency
+    import("@/types/debate").then(({ FLOW_TEMPLATES, TURN_TYPE_CONFIGS }) => {
+      const template = FLOW_TEMPLATES.find((t) => t.id === templateId);
+      if (!template) return;
+
+      setState((prev) => {
+        // Map participant slots to actual participant IDs
+        const p1 = prev.participants[0]?.id || "";
+        const p2 = prev.participants[1]?.id || "";
+        const participantMap: Record<string, string> = {
+          host: HOST_ID,
+          p1,
+          p2,
+        };
+
+        // Generate turns from template steps
+        const newTurns: DebateTurn[] = template.steps.map((step) => {
+          const isHost = step.participantSlot === "host";
+          const participantId = participantMap[step.participantSlot] || "";
+          const turnTypeConfig = TURN_TYPE_CONFIGS[step.type];
+
+          return {
+            id: generateId(),
+            title: step.label,
+            participantId,
+            isHostTurn: isHost,
+            turnType: step.type,
+            duration: turnTypeConfig?.expectedDuration,
+            audioTracks: [],
+          };
+        });
+
+        return {
+          ...prev,
+          turns: newTurns,
+        };
+      });
+    });
+  }, []);
+
   const updateIntroOutroConfig = useCallback(
     (updates: Partial<IntroOutroConfig>) => {
       setState((prev) => {
@@ -514,6 +555,7 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
     nextTurn,
     resetPlayback,
     setTemplate,
+    loadFlowTemplate,
     updateIntroOutroConfig,
     setBroadcastPhase,
     canStartDebate,

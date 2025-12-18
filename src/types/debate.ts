@@ -34,6 +34,7 @@ export type TurnType =
   | "counter_attack"
   | "rebuttal"
   | "closing"
+  | "host"
   | "custom";
 
 export interface TurnTypeConfig {
@@ -48,6 +49,21 @@ export interface DebateTemplate {
   name: string;
   description: string;
   turnTypes: TurnTypeConfig[];
+}
+
+// Flow template step - defines a single step in a debate flow
+export interface FlowTemplateStep {
+  type: TurnType;
+  participantSlot: "host" | "p1" | "p2";
+  label: string;
+}
+
+// Flow template - defines a complete debate structure
+export interface FlowTemplate {
+  id: string;
+  name: string;
+  description: string;
+  steps: FlowTemplateStep[];
 }
 
 export const TURN_TYPE_CONFIGS: Record<TurnType, TurnTypeConfig> = {
@@ -80,6 +96,12 @@ export const TURN_TYPE_CONFIGS: Record<TurnType, TurnTypeConfig> = {
     label: "Closing",
     expectedDuration: 60,
     color: "#8B5CF6",
+  },
+  host: {
+    id: "host",
+    label: "Host",
+    expectedDuration: 30,
+    color: "#14B8A6",
   },
   custom: {
     id: "custom",
@@ -118,6 +140,43 @@ export const DEBATE_TEMPLATES: DebateTemplate[] = [
       { ...TURN_TYPE_CONFIGS.intro_statement, expectedDuration: 60 },
       { ...TURN_TYPE_CONFIGS.counter_attack, expectedDuration: 60 },
       { ...TURN_TYPE_CONFIGS.closing, expectedDuration: 30 },
+    ],
+  },
+];
+
+// Pre-built flow templates for quick setup
+export const FLOW_TEMPLATES: FlowTemplate[] = [
+  {
+    id: "hosted_debate",
+    name: "Hosted Debate",
+    description: "13-step broadcast-style flow with host segments, opening statements, rebuttals, and closing",
+    steps: [
+      // Phase 1: Introduction
+      { type: "host", participantSlot: "host", label: "Host: Welcome & Topic" },
+      { type: "intro_statement", participantSlot: "p1", label: "P1: Opening Statement" },
+      { type: "intro_statement", participantSlot: "p2", label: "P2: Opening Statement" },
+      // Phase 2: The Clash
+      { type: "host", participantSlot: "host", label: "Host: Segue to Rebuttals" },
+      { type: "counter_attack", participantSlot: "p1", label: "P1: Counter Attack" },
+      { type: "defense", participantSlot: "p2", label: "P2: Defense" },
+      { type: "counter_attack", participantSlot: "p2", label: "P2: Counter Attack" },
+      { type: "defense", participantSlot: "p1", label: "P1: Defense" },
+      // Phase 3: Conclusion
+      { type: "host", participantSlot: "host", label: "Host: Move to Closing" },
+      { type: "closing", participantSlot: "p1", label: "P1: Closing Argument" },
+      { type: "closing", participantSlot: "p2", label: "P2: Closing Argument" },
+      { type: "host", participantSlot: "host", label: "Host: Final Sign-off" },
+    ],
+  },
+  {
+    id: "simple_debate",
+    name: "Simple Debate",
+    description: "Quick 4-step debate with opening and closing only",
+    steps: [
+      { type: "intro_statement", participantSlot: "p1", label: "P1: Opening Statement" },
+      { type: "intro_statement", participantSlot: "p2", label: "P2: Opening Statement" },
+      { type: "closing", participantSlot: "p1", label: "P1: Closing" },
+      { type: "closing", participantSlot: "p2", label: "P2: Closing" },
     ],
   },
 ];
@@ -199,6 +258,7 @@ export interface DebateContextType {
   nextTurn: () => void;
   resetPlayback: () => void;
   setTemplate: (template: DebateTemplate | undefined) => void;
+  loadFlowTemplate: (templateId: string) => void;
   updateIntroOutroConfig: (updates: Partial<IntroOutroConfig>) => void;
   setBroadcastPhase: (phase: BroadcastPhase) => void;
   canStartDebate: boolean;
