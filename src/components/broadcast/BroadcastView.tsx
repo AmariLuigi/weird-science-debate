@@ -518,15 +518,47 @@ export function BroadcastView() {
     <div className="min-h-screen flex flex-col relative overflow-hidden bg-slate-950">
       {/* Animated background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        {/* Main gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950" />
+        {/* Video Background - muted, looping, autoplay */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ filter: 'brightness(0.4) saturate(1.2)' }}
+        >
+          <source src="/background.mp4" type="video/mp4" />
+        </video>
 
-        {/* Secondary ambient light - bottom right corner */}
+        {/* Dark overlay for readability */}
+        <div className="absolute inset-0 bg-slate-950/60" />
+
+        {/* Main gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-transparent to-slate-950/90" />
+
+        {/* Ambient glow - bottom right corner */}
         <motion.div
           animate={{
-            opacity: state.isPlaying ? [0.1, 0.2, 0.1] : 0.05,
-            scale: state.isPlaying ? [1, 1.3, 1] : 1,
-            y: state.isPlaying ? [0, -30, 0] : 0,
+            opacity: state.isPlaying ? [0.15, 0.25, 0.15] : 0.08,
+            scale: state.isPlaying ? [1, 1.2, 1] : 1,
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+          className="absolute bottom-0 right-0 w-[600px] h-[600px] translate-x-1/3 translate-y-1/3 rounded-full"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(12, 242, 93, 0.2) 0%, transparent 70%)",
+          }}
+        />
+
+        {/* Ambient glow - top left */}
+        <motion.div
+          animate={{
+            opacity: state.isPlaying ? [0.1, 0.18, 0.1] : 0.05,
+            scale: state.isPlaying ? [1, 1.15, 1] : 1,
           }}
           transition={{
             duration: 10,
@@ -534,25 +566,24 @@ export function BroadcastView() {
             ease: "easeInOut",
             delay: 2,
           }}
-          className="absolute bottom-0 right-0 w-[600px] h-[600px] translate-x-1/3 translate-y-1/3 rounded-full"
+          className="absolute top-0 left-0 w-[500px] h-[500px] -translate-x-1/4 -translate-y-1/4 rounded-full"
           style={{
             background:
-              "radial-gradient(circle, rgba(2, 115, 94, 0.25) 0%, transparent 70%)",
+              "radial-gradient(circle, rgba(2, 115, 94, 0.2) 0%, transparent 70%)",
           }}
         />
 
-        {/* Subtle grid overlay */}
+        {/* Subtle noise texture overlay */}
         <div
-          className="absolute inset-0 opacity-[0.02]"
+          className="absolute inset-0 opacity-[0.03]"
           style={{
-            backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-            backgroundSize: "100px 100px",
+            backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")',
           }}
         />
 
         {/* Vignette effect */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/30" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/50" />
       </div>
 
       {/* Header with title */}
