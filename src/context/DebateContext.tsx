@@ -16,6 +16,7 @@ import {
   DebateTemplate,
   IntroOutroConfig,
   BroadcastPhase,
+  VideoFormat,
 } from "@/types/debate";
 import { generateId } from "@/lib/utils";
 
@@ -42,6 +43,7 @@ const initialState: DebateState = {
   template: undefined,
   introOutroConfig: defaultIntroOutroConfig,
   broadcastPhase: "intro",
+  videoFormat: "standard",
 };
 
 const DebateContext = createContext<DebateContextType | undefined>(undefined);
@@ -494,6 +496,10 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
     setState((prev) => ({ ...prev, broadcastPhase: phase }));
   }, []);
 
+  const setVideoFormat = useCallback((format: VideoFormat) => {
+    setState((prev) => ({ ...prev, videoFormat: format }));
+  }, []);
+
   // Helper function to get all audio URLs for a turn (legacy + tracks)
   const getTurnAudioUrls = (turn: DebateTurn): string[] => {
     const urls: string[] = [];
@@ -558,6 +564,7 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
     loadFlowTemplate,
     updateIntroOutroConfig,
     setBroadcastPhase,
+    setVideoFormat,
     canStartDebate,
   };
 

@@ -109,7 +109,7 @@ export function IntroSequence({
   }));
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950 flex items-center justify-center overflow-hidden">
+    <div className="absolute inset-0 z-50 bg-slate-950 flex items-center justify-center overflow-hidden">
       {/* Animated background layers */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-b from-brand-dark/30 via-transparent to-brand-dark/30" />

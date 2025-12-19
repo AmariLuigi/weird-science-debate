@@ -215,6 +215,8 @@ export interface DebateTurn {
 
 export type BroadcastPhase = "intro" | "debate" | "outro";
 
+export type VideoFormat = "standard" | "shorts";
+
 export interface DebateState {
   title: string;
   participants: Participant[];
@@ -225,6 +227,7 @@ export interface DebateState {
   template?: DebateTemplate;
   introOutroConfig: IntroOutroConfig;
   broadcastPhase: BroadcastPhase;
+  videoFormat: VideoFormat;
 }
 
 export type ViewMode = "config" | "broadcast";
@@ -261,5 +264,6 @@ export interface DebateContextType {
   loadFlowTemplate: (templateId: string) => void;
   updateIntroOutroConfig: (updates: Partial<IntroOutroConfig>) => void;
   setBroadcastPhase: (phase: BroadcastPhase) => void;
+  setVideoFormat: (format: VideoFormat) => void;
   canStartDebate: boolean;
 }

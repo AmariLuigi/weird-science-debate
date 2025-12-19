@@ -8,6 +8,7 @@ import { HostSection } from "./HostSection";
 import { ScriptTimeline } from "./ScriptTimeline";
 import { TemplateSelector } from "./TemplateSelector";
 import { AudioEnhancementsSection } from "./AudioEnhancementsSection";
+import { FormatSelector } from "./FormatSelector";
 import { Button } from "@/components/ui/Button";
 
 export function ConfigurationView() {
@@ -79,6 +80,15 @@ export function ConfigurationView() {
         <div className="max-w-6xl mx-auto space-y-6">
           {/* Debate Title */}
           <DebateTitleInput value={state.title} onChange={setTitle} />
+
+          {/* Video Format Selector */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+          >
+            <FormatSelector />
+          </motion.div>
 
           {/* Template Selector */}
           <motion.div

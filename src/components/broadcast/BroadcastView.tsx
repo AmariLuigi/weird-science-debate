@@ -43,6 +43,23 @@ function getTurnAudioData(
   return audioData;
 }
 
+// Shorts wrapper component for vertical layout - defined outside to prevent recreation
+function ShortsWrapper({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-slate-950">
+      {/* Dark background that fills the rest */}
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-900 to-slate-950" />
+      {/* Centered vertical container */}
+      <div
+        className="relative w-full h-full max-h-screen overflow-hidden"
+        style={{ aspectRatio: '9/16', maxWidth: 'calc(100vh * 9 / 16)' }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export function BroadcastView() {
   const {
     state,
@@ -71,7 +88,8 @@ export function BroadcastView() {
 
   const backgroundAudio = useBackgroundAudio();
 
-  const { introOutroConfig, broadcastPhase } = state;
+  const { introOutroConfig, broadcastPhase, videoFormat } = state;
+  const isShorts = videoFormat === "shorts";
 
   const currentTurn = state.turns[state.currentTurnIndex];
 
@@ -484,7 +502,7 @@ export function BroadcastView() {
 
   // Render intro sequence
   if (broadcastPhase === "intro" && introOutroConfig.enableIntro) {
-    return (
+    const introContent = (
       <IntroSequence
         title={state.title}
         participants={state.participants}
@@ -495,11 +513,13 @@ export function BroadcastView() {
         introMusicVolume={introOutroConfig.introMusicVolume}
       />
     );
+
+    return isShorts ? <ShortsWrapper>{introContent}</ShortsWrapper> : introContent;
   }
 
   // Render outro sequence
   if (broadcastPhase === "outro") {
-    return (
+    const outroContent = (
       <OutroSequence
         title={state.title}
         participants={state.participants}
@@ -512,9 +532,12 @@ export function BroadcastView() {
         outroVideoUrl={introOutroConfig.outroVideoUrl}
       />
     );
+
+    return isShorts ? <ShortsWrapper>{outroContent}</ShortsWrapper> : outroContent;
   }
 
-  return (
+  // Main debate content
+  const debateContent = (
     <div className="min-h-screen flex flex-col relative overflow-hidden bg-slate-950">
       {/* Animated background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
@@ -744,4 +767,6 @@ export function BroadcastView() {
       )}
     </div>
   );
+
+  return isShorts ? <ShortsWrapper>{debateContent}</ShortsWrapper> : debateContent;
 }
