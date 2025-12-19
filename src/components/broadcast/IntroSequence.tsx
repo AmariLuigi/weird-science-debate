@@ -44,22 +44,19 @@ function FloatingParticle({ delay, duration, size, x, y }: { delay: number; dura
 export function IntroSequence({
   title,
   participants,
-  turns,
   onComplete,
 }: IntroSequenceProps) {
-  const [phase, setPhase] = useState<"branding" | "title" | "participants" | "topics">("branding");
+  const [phase, setPhase] = useState<"branding" | "title" | "participants">("branding");
   const [showSkip, setShowSkip] = useState(false);
   const [currentParticipantIndex, setCurrentParticipantIndex] = useState(-1);
 
   const baseDelay = 2500; // Extended for logo reveal
-  const participantDelay = 800;
-  const topicDelay = 600;
+  const participantDelay = 1200; // Time between each participant reveal
 
   const totalDuration =
     baseDelay * 2 +
     participants.length * participantDelay +
-    Math.min(turns.length, 5) * topicDelay +
-    2000;
+    2500; // Extra time for VS showdown
 
   useEffect(() => {
     const skipTimer = setTimeout(() => setShowSkip(true), 3000);
@@ -89,30 +86,18 @@ export function IntroSequence({
         }, participantDelay);
         return () => clearTimeout(timer);
       } else {
-        const timer = setTimeout(() => setPhase("topics"), 500);
+        // Extra time to let the VS showdown breathe before completing
+        const timer = setTimeout(() => onComplete(), 2500);
         return () => clearTimeout(timer);
       }
     }
-  }, [phase, currentParticipantIndex, participants.length]);
-
-  useEffect(() => {
-    if (phase === "topics") {
-      const topicsToShow = Math.min(turns.length, 5);
-      const timer = setTimeout(() => {
-        onComplete();
-      }, topicsToShow * topicDelay + 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [phase, turns.length, onComplete]);
+  }, [phase, currentParticipantIndex, participants.length, onComplete]);
 
   const handleSkip = useCallback(() => {
     onComplete();
   }, [onComplete]);
 
-  const topicTitles = turns
-    .filter((t) => t.title)
-    .map((t) => t.title)
-    .slice(0, 5);
+
 
   // Generate particles for visual effect
   const particles = Array.from({ length: 12 }, (_, i) => ({
@@ -274,68 +259,227 @@ export function IntroSequence({
               exit={{ opacity: 0 }}
               className="space-y-6"
             >
-              <h3 className="text-2xl text-slate-400 mb-10">Featuring</h3>
-              <div className="flex flex-wrap justify-center gap-10">
-                {participants.map((participant, index) => (
+              <motion.h3
+                className="text-2xl text-slate-400 mb-10"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+              >
+                Featuring
+              </motion.h3>
+              <div className="flex items-center justify-center gap-6 md:gap-10">
+                {/* First participant - slides from left */}
+                {participants[0] && (
                   <motion.div
-                    key={participant.id}
-                    initial={{ opacity: 0, x: -50, scale: 0.8 }}
+                    initial={{ opacity: 0, x: -200, scale: 0.5 }}
                     animate={{
-                      opacity: index <= currentParticipantIndex ? 1 : 0,
-                      x: index <= currentParticipantIndex ? 0 : -50,
-                      scale: index <= currentParticipantIndex ? 1 : 0.8,
+                      opacity: currentParticipantIndex >= 0 ? 1 : 0,
+                      x: currentParticipantIndex >= 0 ? 0 : -200,
+                      scale: currentParticipantIndex >= 0 ? 1 : 0.5,
                     }}
-                    transition={{ duration: 0.4 }}
+                    transition={{
+                      duration: 0.6,
+                      type: "spring",
+                      stiffness: 100,
+                      damping: 15
+                    }}
                     className="flex flex-col items-center"
                   >
-                    <div className="w-32 h-32 rounded-full border-3 border-primary/50 overflow-hidden mb-4 bg-gradient-to-br from-primary/20 to-brand-teal/20">
-                      {participant.avatarUrl ? (
+                    <motion.div
+                      className="w-32 h-32 md:w-40 md:h-40 rounded-full border-3 border-primary/50 overflow-hidden mb-4 bg-gradient-to-br from-primary/20 to-brand-teal/20 relative"
+                      animate={currentParticipantIndex >= 0 ? {
+                        boxShadow: [
+                          "0 0 0px rgba(12, 242, 93, 0)",
+                          "0 0 30px rgba(12, 242, 93, 0.5)",
+                          "0 0 15px rgba(12, 242, 93, 0.3)",
+                        ],
+                      } : {}}
+                      transition={{ duration: 1, delay: 0.3 }}
+                    >
+                      {participants[0].avatarUrl ? (
                         <img
-                          src={participant.avatarUrl}
-                          alt={participant.name}
+                          src={participants[0].avatarUrl}
+                          alt={participants[0].name}
                           className="w-full h-full object-cover"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <span className="text-4xl font-bold text-white/80">
-                            {participant.name?.charAt(0)?.toUpperCase() || "?"}
+                            {participants[0].name?.charAt(0)?.toUpperCase() || "?"}
                           </span>
                         </div>
                       )}
-                    </div>
-                    <span className="text-xl text-white font-medium">
-                      {participant.name || "Participant"}
-                    </span>
+                    </motion.div>
+                    <motion.span
+                      className="text-xl md:text-2xl text-white font-bold"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: currentParticipantIndex >= 0 ? 1 : 0 }}
+                      transition={{ delay: 0.3 }}
+                    >
+                      {participants[0].name || "Participant"}
+                    </motion.span>
                   </motion.div>
-                ))}
+                )}
+
+                {/* VS Image - slams into center */}
+                <motion.div
+                  className="relative"
+                  initial={{ opacity: 0, scale: 3, rotate: -15 }}
+                  animate={{
+                    opacity: currentParticipantIndex >= 1 ? 1 : 0,
+                    scale: currentParticipantIndex >= 1 ? 1 : 3,
+                    rotate: currentParticipantIndex >= 1 ? 0 : -15,
+                  }}
+                  transition={{
+                    duration: 0.4,
+                    type: "spring",
+                    stiffness: 200,
+                    damping: 15,
+                  }}
+                >
+                  {/* Glow backdrop - green */}
+                  <motion.div
+                    className="absolute inset-0 -z-10 blur-2xl"
+                    style={{
+                      background: "radial-gradient(ellipse, rgba(12, 242, 93, 0.6) 0%, transparent 70%)",
+                      transform: "scale(2)",
+                    }}
+                    animate={currentParticipantIndex >= 1 ? {
+                      opacity: [0, 1, 0.5],
+                      scale: [1.5, 2.5, 2],
+                    } : { opacity: 0 }}
+                    transition={{ duration: 0.6 }}
+                  />
+                  {/* Impact flash */}
+                  <motion.div
+                    className="absolute inset-0 -z-5 rounded-full bg-white"
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={currentParticipantIndex >= 1 ? {
+                      opacity: [0, 0.8, 0],
+                      scale: [0.5, 3, 4],
+                    } : {}}
+                    transition={{ duration: 0.5 }}
+                  />
+                  <motion.img
+                    src="/VERSUS.png"
+                    alt="VS"
+                    className="w-20 h-20 md:w-28 md:h-28 object-contain drop-shadow-2xl"
+                    style={{
+                      filter: "brightness(0) saturate(100%) invert(78%) sepia(85%) saturate(500%) hue-rotate(85deg) brightness(105%) contrast(105%) drop-shadow(0 0 25px rgba(12, 242, 93, 0.8))",
+                    }}
+                    animate={currentParticipantIndex >= 1 ? {
+                      scale: [1, 1.1, 1],
+                    } : {}}
+                    transition={{
+                      duration: 1.5,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: 0.5,
+                    }}
+                  />
+                </motion.div>
+
+                {/* Second participant - slides from right */}
+                {participants[1] && (
+                  <motion.div
+                    initial={{ opacity: 0, x: 200, scale: 0.5 }}
+                    animate={{
+                      opacity: currentParticipantIndex >= 1 ? 1 : 0,
+                      x: currentParticipantIndex >= 1 ? 0 : 200,
+                      scale: currentParticipantIndex >= 1 ? 1 : 0.5,
+                    }}
+                    transition={{
+                      duration: 0.6,
+                      type: "spring",
+                      stiffness: 100,
+                      damping: 15,
+                      delay: 0.1
+                    }}
+                    className="flex flex-col items-center"
+                  >
+                    <motion.div
+                      className="w-32 h-32 md:w-40 md:h-40 rounded-full border-3 border-primary/50 overflow-hidden mb-4 bg-gradient-to-br from-primary/20 to-brand-teal/20 relative"
+                      animate={currentParticipantIndex >= 1 ? {
+                        boxShadow: [
+                          "0 0 0px rgba(12, 242, 93, 0)",
+                          "0 0 30px rgba(12, 242, 93, 0.5)",
+                          "0 0 15px rgba(12, 242, 93, 0.3)",
+                        ],
+                      } : {}}
+                      transition={{ duration: 1, delay: 0.4 }}
+                    >
+                      {participants[1].avatarUrl ? (
+                        <img
+                          src={participants[1].avatarUrl}
+                          alt={participants[1].name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span className="text-4xl font-bold text-white/80">
+                            {participants[1].name?.charAt(0)?.toUpperCase() || "?"}
+                          </span>
+                        </div>
+                      )}
+                    </motion.div>
+                    <motion.span
+                      className="text-xl md:text-2xl text-white font-bold"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: currentParticipantIndex >= 1 ? 1 : 0 }}
+                      transition={{ delay: 0.4 }}
+                    >
+                      {participants[1].name || "Participant"}
+                    </motion.span>
+                  </motion.div>
+                )}
               </div>
+
+              {/* Additional participants (if more than 2) */}
+              {participants.length > 2 && (
+                <motion.div
+                  className="flex flex-wrap justify-center gap-6 mt-8"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: currentParticipantIndex >= 2 ? 1 : 0 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  {participants.slice(2).map((participant, index) => (
+                    <motion.div
+                      key={participant.id}
+                      initial={{ opacity: 0, y: 30, scale: 0.8 }}
+                      animate={{
+                        opacity: currentParticipantIndex >= index + 2 ? 1 : 0,
+                        y: currentParticipantIndex >= index + 2 ? 0 : 30,
+                        scale: currentParticipantIndex >= index + 2 ? 1 : 0.8,
+                      }}
+                      transition={{ duration: 0.4 }}
+                      className="flex flex-col items-center"
+                    >
+                      <div className="w-24 h-24 rounded-full border-2 border-primary/50 overflow-hidden mb-3 bg-gradient-to-br from-primary/20 to-brand-teal/20">
+                        {participant.avatarUrl ? (
+                          <img
+                            src={participant.avatarUrl}
+                            alt={participant.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <span className="text-2xl font-bold text-white/80">
+                              {participant.name?.charAt(0)?.toUpperCase() || "?"}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-lg text-white font-medium">
+                        {participant.name || "Participant"}
+                      </span>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
             </motion.div>
           )}
 
-          {phase === "topics" && topicTitles.length > 0 && (
-            <motion.div
-              key="topics"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="space-y-4"
-            >
-              <h3 className="text-2xl text-slate-400 mb-8">Topics</h3>
-              <div className="space-y-4">
-                {topicTitles.map((topic, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: 50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.15, duration: 0.4 }}
-                    className="px-8 py-4 bg-slate-800/50 border border-white/10 rounded-lg"
-                  >
-                    <span className="text-lg text-white">{topic}</span>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          )}
+
         </AnimatePresence>
       </div>
 
