@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState, useRef } from "react";
+import { useEffect, useCallback, useState, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy } from "lucide-react";
 import { useDebate } from "@/context/DebateContext";
@@ -86,6 +86,8 @@ export function BroadcastView() {
     nextTurn,
     resetPlayback,
     setBroadcastPhase,
+    getGroupForTurn,
+    getPlayOrderTurns,
   } = useDebate();
 
   const [isFinished, setIsFinished] = useState(false);
@@ -108,7 +110,11 @@ export function BroadcastView() {
   const { introOutroConfig, broadcastPhase, videoFormat } = state;
   const isShorts = videoFormat === "shorts";
 
-  const currentTurn = state.turns[state.currentTurnIndex];
+  // Get turns in correct playback order (groups first, then ungrouped)
+  const orderedTurns = useMemo(() => getPlayOrderTurns(), [getPlayOrderTurns]);
+
+  // Use ordered turns for playback
+  const currentTurn = orderedTurns[state.currentTurnIndex];
 
   // Determine if current turn is a host turn
   const isHostTurn = currentTurn?.isHostTurn ?? false;
@@ -117,6 +123,10 @@ export function BroadcastView() {
   const audioData = currentTurn ? getTurnAudioData(currentTurn) : [];
   const hasAudioTracks = audioData.length > 0;
   const isVideoTurn = isHostTurn && !!currentTurn?.videoUrl && !hasAudioTracks;
+
+  // Get topic image from Question Group (Shorts mode)
+  const currentGroup = currentTurn ? getGroupForTurn(currentTurn.id) : undefined;
+  const topicImageUrl = currentGroup?.imageUrl;
 
   // Get current audio being played
   const currentAudioData = audioData[currentAudioIndex];
@@ -133,8 +143,8 @@ export function BroadcastView() {
     : currentParticipant?.name;
 
   // Calculate participant-only turn metrics
-  const totalParticipantTurns = state.turns.filter((t) => !t.isHostTurn).length;
-  const currentParticipantTurnCount = state.turns
+  const totalParticipantTurns = orderedTurns.filter((t) => !t.isHostTurn).length;
+  const currentParticipantTurnCount = orderedTurns
     .slice(0, state.currentTurnIndex + 1)
     .filter((t) => !t.isHostTurn).length;
 
@@ -163,7 +173,7 @@ export function BroadcastView() {
       );
       setCurrentAudioIndex(0);
 
-      if (state.currentTurnIndex < state.turns.length - 1) {
+      if (state.currentTurnIndex < orderedTurns.length - 1) {
         if (introOutroConfig.transitionSoundUrl) {
           backgroundAudio.playTransitionSound(
             introOutroConfig.transitionSoundUrl,
@@ -184,7 +194,7 @@ export function BroadcastView() {
     currentAudioIndex,
     totalAudioTracks,
     state.currentTurnIndex,
-    state.turns.length,
+    orderedTurns.length,
     nextTurn,
     setIsPlaying,
     introOutroConfig,
@@ -672,13 +682,16 @@ export function BroadcastView() {
         {state.isPlaying && (
           <>
             <DebateTimer elapsedTime={debateElapsedTime} position="top-left" />
-            <TimerDisplay
-              currentTime={turnElapsedTime}
-              expectedDuration={expectedTurnDuration}
-              position="top-right"
-              label={turnLabel}
-              showExpected={expectedTurnDuration > 0}
-            />
+            {/* Turn timer hidden in Shorts mode - only show total time */}
+            {!isShorts && (
+              <TimerDisplay
+                currentTime={turnElapsedTime}
+                expectedDuration={expectedTurnDuration}
+                position="top-right"
+                label={turnLabel}
+                showExpected={expectedTurnDuration > 0}
+              />
+            )}
           </>
         )}
 
@@ -700,6 +713,8 @@ export function BroadcastView() {
                 currentTurnVideoUrl={currentTurn?.videoUrl}
                 onVideoEnded={handleAudioEnded}
                 onVideoTimeUpdate={handleVideoTimeUpdate}
+                isShorts={isShorts}
+                topicImageUrl={topicImageUrl}
               />
             </div>
           ) : (
@@ -729,7 +744,7 @@ export function BroadcastView() {
                 Debate Complete!
               </h2>
               <p className="text-slate-400 mb-8">
-                All {state.turns.length} speaking turns have concluded.
+                All {orderedTurns.length} speaking turns have concluded.
               </p>
               <div className="flex items-center justify-center gap-4">
                 <Button variant="secondary" onClick={handleRestart}>

@@ -17,6 +17,7 @@ import {
   IntroOutroConfig,
   BroadcastPhase,
   VideoFormat,
+  QuestionGroup,
 } from "@/types/debate";
 import { generateId } from "@/lib/utils";
 
@@ -39,6 +40,7 @@ const initialState: DebateState = {
     name: "Weird Science",
   },
   turns: [],
+  questionGroups: [],
   currentTurnIndex: 0,
   isPlaying: false,
   template: undefined,
@@ -248,6 +250,11 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
       return {
         ...prev,
         turns: prev.turns.filter((t) => t.id !== id),
+        // Also remove from any question groups
+        questionGroups: prev.questionGroups.map((g) => ({
+          ...g,
+          turnIds: g.turnIds.filter((turnId) => turnId !== id),
+        })),
       };
     });
   }, []);
@@ -503,6 +510,174 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
     setState((prev) => ({ ...prev, videoFormat: format }));
   }, []);
 
+  // ===== Question Group CRUD operations =====
+  const addQuestionGroup = useCallback(() => {
+    const newGroup: QuestionGroup = {
+      id: generateId(),
+      title: "",
+      turnIds: [],
+    };
+    setState((prev) => ({
+      ...prev,
+      questionGroups: [...prev.questionGroups, newGroup],
+    }));
+  }, []);
+
+  const updateQuestionGroup = useCallback(
+    (id: string, updates: Partial<Omit<QuestionGroup, "id">>) => {
+      setState((prev) => ({
+        ...prev,
+        questionGroups: prev.questionGroups.map((g) => {
+          if (g.id !== id) return g;
+
+          // Handle image URL creation/cleanup
+          let newImageUrl = g.imageUrl;
+          if (updates.imageFile !== undefined) {
+            if (g.imageUrl) {
+              URL.revokeObjectURL(g.imageUrl);
+            }
+            newImageUrl = updates.imageFile
+              ? URL.createObjectURL(updates.imageFile)
+              : undefined;
+          }
+
+          return {
+            ...g,
+            ...updates,
+            imageUrl:
+              updates.imageFile !== undefined ? newImageUrl : g.imageUrl,
+          };
+        }),
+      }));
+    },
+    [],
+  );
+
+  const removeQuestionGroup = useCallback((id: string) => {
+    setState((prev) => {
+      const group = prev.questionGroups.find((g) => g.id === id);
+      if (group?.imageUrl) {
+        URL.revokeObjectURL(group.imageUrl);
+      }
+      return {
+        ...prev,
+        questionGroups: prev.questionGroups.filter((g) => g.id !== id),
+      };
+    });
+  }, []);
+
+  const addTurnToGroup = useCallback((groupId: string, turnId: string) => {
+    setState((prev) => ({
+      ...prev,
+      // First remove from any existing group
+      questionGroups: prev.questionGroups.map((g) => ({
+        ...g,
+        turnIds: g.id === groupId
+          ? [...g.turnIds.filter((id) => id !== turnId), turnId]
+          : g.turnIds.filter((id) => id !== turnId),
+      })),
+    }));
+  }, []);
+
+  const removeTurnFromGroup = useCallback((groupId: string, turnId: string) => {
+    setState((prev) => ({
+      ...prev,
+      questionGroups: prev.questionGroups.map((g) =>
+        g.id === groupId
+          ? { ...g, turnIds: g.turnIds.filter((id) => id !== turnId) }
+          : g
+      ),
+    }));
+  }, []);
+
+  const reorderTurnsInGroup = useCallback(
+    (groupId: string, activeId: string, overId: string) => {
+      setState((prev) => ({
+        ...prev,
+        questionGroups: prev.questionGroups.map((g) => {
+          if (g.id !== groupId) return g;
+          const oldIndex = g.turnIds.indexOf(activeId);
+          const newIndex = g.turnIds.indexOf(overId);
+          if (oldIndex === -1 || newIndex === -1) return g;
+          const newTurnIds = [...g.turnIds];
+          newTurnIds.splice(oldIndex, 1);
+          newTurnIds.splice(newIndex, 0, activeId);
+          return { ...g, turnIds: newTurnIds };
+        }),
+      }));
+    },
+    [],
+  );
+
+  const reorderQuestionGroups = useCallback(
+    (activeId: string, overId: string) => {
+      setState((prev) => {
+        const oldIndex = prev.questionGroups.findIndex((g) => g.id === activeId);
+        const newIndex = prev.questionGroups.findIndex((g) => g.id === overId);
+        if (oldIndex === -1 || newIndex === -1) return prev;
+        const newGroups = [...prev.questionGroups];
+        newGroups.splice(oldIndex, 1);
+        newGroups.splice(newIndex, 0, prev.questionGroups[oldIndex]);
+        return { ...prev, questionGroups: newGroups };
+      });
+    },
+    [],
+  );
+
+  const getGroupForTurn = useCallback(
+    (turnId: string): QuestionGroup | undefined => {
+      return state.questionGroups.find((g) => g.turnIds.includes(turnId));
+    },
+    [state.questionGroups],
+  );
+
+  // Create a new turn and immediately add it to a question group
+  const addTurnToQuestionGroup = useCallback((groupId: string) => {
+    const newTurn: DebateTurn = {
+      id: generateId(),
+      title: "",
+      participantId: "",
+      isHostTurn: false,
+      audioTracks: [],
+    };
+    setState((prev) => ({
+      ...prev,
+      turns: [...prev.turns, newTurn],
+      questionGroups: prev.questionGroups.map((g) =>
+        g.id === groupId
+          ? { ...g, turnIds: [...g.turnIds, newTurn.id] }
+          : g
+      ),
+    }));
+  }, []);
+
+  // Get turns in correct playback order: groups first (in their order), then ungrouped turns
+  const getPlayOrderTurns = useCallback((): DebateTurn[] => {
+    const orderedTurns: DebateTurn[] = [];
+    const addedTurnIds = new Set<string>();
+
+    // First, add turns from each group in group order
+    for (const group of state.questionGroups) {
+      for (const turnId of group.turnIds) {
+        const turn = state.turns.find((t) => t.id === turnId);
+        if (turn && !addedTurnIds.has(turnId)) {
+          orderedTurns.push(turn);
+          addedTurnIds.add(turnId);
+        }
+      }
+    }
+
+    // Then add ungrouped turns (maintaining their original order)
+    for (const turn of state.turns) {
+      if (!addedTurnIds.has(turn.id)) {
+        orderedTurns.push(turn);
+        addedTurnIds.add(turn.id);
+      }
+    }
+
+    return orderedTurns;
+  }, [state.questionGroups, state.turns]);
+
   // Helper function to get all audio URLs for a turn (legacy + tracks)
   const getTurnAudioUrls = (turn: DebateTurn): string[] => {
     const urls: string[] = [];
@@ -568,6 +743,16 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
     updateIntroOutroConfig,
     setBroadcastPhase,
     setVideoFormat,
+    addQuestionGroup,
+    updateQuestionGroup,
+    removeQuestionGroup,
+    addTurnToGroup,
+    removeTurnFromGroup,
+    reorderTurnsInGroup,
+    reorderQuestionGroups,
+    getGroupForTurn,
+    addTurnToQuestionGroup,
+    getPlayOrderTurns,
     canStartDebate,
   };
 

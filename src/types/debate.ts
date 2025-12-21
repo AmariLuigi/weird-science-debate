@@ -67,6 +67,15 @@ export interface FlowTemplate {
   steps: FlowTemplateStep[];
 }
 
+// Question Group - groups turns under a shared topic image (Shorts mode)
+export interface QuestionGroup {
+  id: string;
+  title: string;
+  imageFile?: File;
+  imageUrl?: string;
+  turnIds: string[];  // ordered list of turn IDs in this group
+}
+
 export const TURN_TYPE_CONFIGS: Record<TurnType, TurnTypeConfig> = {
   intro_statement: {
     id: "intro_statement",
@@ -223,6 +232,7 @@ export interface DebateState {
   participants: Participant[];
   host: Host;
   turns: DebateTurn[];
+  questionGroups: QuestionGroup[];  // Shorts mode: groups with shared topic images
   currentTurnIndex: number;
   isPlaying: boolean;
   template?: DebateTemplate;
@@ -266,5 +276,16 @@ export interface DebateContextType {
   updateIntroOutroConfig: (updates: Partial<IntroOutroConfig>) => void;
   setBroadcastPhase: (phase: BroadcastPhase) => void;
   setVideoFormat: (format: VideoFormat) => void;
+  // Question Groups (Shorts mode)
+  addQuestionGroup: () => void;
+  updateQuestionGroup: (id: string, updates: Partial<Omit<QuestionGroup, "id">>) => void;
+  removeQuestionGroup: (id: string) => void;
+  addTurnToGroup: (groupId: string, turnId: string) => void;
+  removeTurnFromGroup: (groupId: string, turnId: string) => void;
+  reorderTurnsInGroup: (groupId: string, activeId: string, overId: string) => void;
+  reorderQuestionGroups: (activeId: string, overId: string) => void;  // Reorder groups in timeline
+  getGroupForTurn: (turnId: string) => QuestionGroup | undefined;
+  addTurnToQuestionGroup: (groupId: string) => void;  // Create turn and add to group in one action
+  getPlayOrderTurns: () => DebateTurn[];  // Get turns in correct playback order (groups first, then ungrouped)
   canStartDebate: boolean;
 }
