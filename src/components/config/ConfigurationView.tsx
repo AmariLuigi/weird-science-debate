@@ -6,7 +6,6 @@ import { DebateTitleInput } from "./DebateTitleInput";
 import { ParticipantsSection } from "./ParticipantsSection";
 import { HostSection } from "./HostSection";
 import { ScriptTimeline } from "./ScriptTimeline";
-import { TemplateSelector } from "./TemplateSelector";
 import { AudioEnhancementsSection } from "./AudioEnhancementsSection";
 import { FormatSelector } from "./FormatSelector";
 import { Button } from "@/components/ui/Button";
@@ -90,20 +89,11 @@ export function ConfigurationView() {
             <FormatSelector />
           </motion.div>
 
-          {/* Template Selector */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <TemplateSelector />
-          </motion.div>
-
           {/* Host Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
+            transition={{ delay: 0.1 }}
           >
             <HostSection />
           </motion.div>
@@ -112,7 +102,7 @@ export function ConfigurationView() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: 0.15 }}
           >
             <ParticipantsSection />
           </motion.div>
@@ -121,7 +111,7 @@ export function ConfigurationView() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25 }}
+            transition={{ delay: 0.2 }}
           >
             <AudioEnhancementsSection />
           </motion.div>
@@ -130,7 +120,7 @@ export function ConfigurationView() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
+            transition={{ delay: 0.25 }}
           >
             <ScriptTimeline />
           </motion.div>
