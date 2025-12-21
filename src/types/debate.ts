@@ -74,7 +74,15 @@ export interface QuestionGroup {
   imageFile?: File;
   imageUrl?: string;
   turnIds: string[];  // ordered list of turn IDs in this group
+  // Decision outcome videos (played after participant speech based on their decision)
+  positiveVideoFile?: File;
+  positiveVideoUrl?: string;
+  negativeVideoFile?: File;
+  negativeVideoUrl?: string;
 }
+
+// Participant decision for a turn (Shorts mode)
+export type ParticipantDecision = 'positive' | 'negative' | null;
 
 export const TURN_TYPE_CONFIGS: Record<TurnType, TurnTypeConfig> = {
   intro_statement: {
@@ -221,6 +229,8 @@ export interface DebateTurn {
   videoUrl?: string;
   subtitleFile?: File;
   subtitles?: SubtitleCue[];
+  // Participant decision (Shorts mode) - determines which outcome video plays
+  decision?: ParticipantDecision;
 }
 
 export type BroadcastPhase = "intro" | "debate" | "outro";

@@ -14,8 +14,10 @@ import {
   Music,
   Clock,
   AlertTriangle,
+  ThumbsUp,
+  ThumbsDown,
 } from "lucide-react";
-import { DebateTurn, AudioTrack, TurnType, TURN_TYPE_CONFIGS } from "@/types/debate";
+import { DebateTurn, AudioTrack, TurnType, TURN_TYPE_CONFIGS, ParticipantDecision } from "@/types/debate";
 import { useDebate } from "@/context/DebateContext";
 import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
@@ -56,6 +58,7 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
       addAudioTrack,
       updateAudioTrack,
       removeAudioTrack,
+      getGroupForTurn,
     } = useDebate();
     const [isConverting, setIsConverting] = useState(false);
     const [conversionProgress, setConversionProgress] =
@@ -791,6 +794,47 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
                       className="flex-1"
                     />
                   </div>
+
+                  {/* Decision Selector - Only show for turns in groups with decision videos */}
+                  {(() => {
+                    const group = getGroupForTurn(turn.id);
+                    const hasDecisionVideos = group?.positiveVideoUrl || group?.negativeVideoUrl;
+                    if (!hasDecisionVideos) return null;
+
+                    return (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-400">Decision:</span>
+                        <div className="flex gap-1">
+                          <button
+                            type="button"
+                            onClick={() => updateTurn(turn.id, { decision: turn.decision === 'positive' ? null : 'positive' as ParticipantDecision })}
+                            className={cn(
+                              "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all",
+                              turn.decision === 'positive'
+                                ? "bg-green-500/20 border border-green-500/50 text-green-400"
+                                : "bg-slate-800/50 border border-slate-600/30 text-slate-400 hover:border-green-500/30 hover:text-green-400"
+                            )}
+                          >
+                            <ThumbsUp className="w-3.5 h-3.5" />
+                            Positive
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => updateTurn(turn.id, { decision: turn.decision === 'negative' ? null : 'negative' as ParticipantDecision })}
+                            className={cn(
+                              "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all",
+                              turn.decision === 'negative'
+                                ? "bg-red-500/20 border border-red-500/50 text-red-400"
+                                : "bg-slate-800/50 border border-slate-600/30 text-slate-400 hover:border-red-500/30 hover:text-red-400"
+                            )}
+                          >
+                            <ThumbsDown className="w-3.5 h-3.5" />
+                            Negative
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {/* Primary Audio Upload with Conversion */}
                   <div className="relative">

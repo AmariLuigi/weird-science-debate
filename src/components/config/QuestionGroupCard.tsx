@@ -8,6 +8,9 @@ import {
     Trash2,
     Plus,
     GripVertical,
+    Video,
+    ThumbsUp,
+    ThumbsDown,
 } from "lucide-react";
 import {
     DndContext,
@@ -85,6 +88,34 @@ export const QuestionGroupCard = forwardRef<HTMLDivElement, QuestionGroupCardPro
 
         const handleRemoveImage = useCallback(() => {
             updateQuestionGroup(group.id, { imageFile: undefined });
+        }, [group.id, updateQuestionGroup]);
+
+        const handlePositiveVideoChange = useCallback(
+            (e: React.ChangeEvent<HTMLInputElement>) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                    updateQuestionGroup(group.id, { positiveVideoFile: file });
+                }
+            },
+            [group.id, updateQuestionGroup],
+        );
+
+        const handleRemovePositiveVideo = useCallback(() => {
+            updateQuestionGroup(group.id, { positiveVideoFile: undefined });
+        }, [group.id, updateQuestionGroup]);
+
+        const handleNegativeVideoChange = useCallback(
+            (e: React.ChangeEvent<HTMLInputElement>) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                    updateQuestionGroup(group.id, { negativeVideoFile: file });
+                }
+            },
+            [group.id, updateQuestionGroup],
+        );
+
+        const handleRemoveNegativeVideo = useCallback(() => {
+            updateQuestionGroup(group.id, { negativeVideoFile: undefined });
         }, [group.id, updateQuestionGroup]);
 
         // Get turns that belong to this group
@@ -246,6 +277,77 @@ export const QuestionGroupCard = forwardRef<HTMLDivElement, QuestionGroupCardPro
                                                 />
                                             </label>
                                         )}
+                                    </div>
+
+                                    {/* Decision Videos Section */}
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {/* Positive Decision Video */}
+                                        <div className="space-y-1">
+                                            <div className="flex items-center gap-1.5 text-xs text-green-400">
+                                                <ThumbsUp className="w-3.5 h-3.5" />
+                                                <span>Positive Outcome</span>
+                                            </div>
+                                            {group.positiveVideoUrl ? (
+                                                <div className="flex items-center gap-2 p-2 bg-green-500/10 border border-green-500/30 rounded-lg">
+                                                    <Video className="w-4 h-4 text-green-400 shrink-0" />
+                                                    <span className="text-xs text-white truncate flex-1">
+                                                        {group.positiveVideoFile?.name || "Video"}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleRemovePositiveVideo}
+                                                        className="p-0.5 hover:bg-white/10 rounded"
+                                                    >
+                                                        <X className="w-3 h-3 text-slate-400 hover:text-white" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <label className="flex items-center gap-2 p-2 bg-slate-800/30 border border-dashed border-green-500/30 rounded-lg hover:border-green-500/50 hover:bg-slate-800/50 transition-all cursor-pointer">
+                                                    <Video className="w-4 h-4 text-green-400/60" />
+                                                    <span className="text-xs text-slate-400">Upload video</span>
+                                                    <input
+                                                        type="file"
+                                                        accept="video/*"
+                                                        onChange={handlePositiveVideoChange}
+                                                        className="hidden"
+                                                    />
+                                                </label>
+                                            )}
+                                        </div>
+
+                                        {/* Negative Decision Video */}
+                                        <div className="space-y-1">
+                                            <div className="flex items-center gap-1.5 text-xs text-red-400">
+                                                <ThumbsDown className="w-3.5 h-3.5" />
+                                                <span>Negative Outcome</span>
+                                            </div>
+                                            {group.negativeVideoUrl ? (
+                                                <div className="flex items-center gap-2 p-2 bg-red-500/10 border border-red-500/30 rounded-lg">
+                                                    <Video className="w-4 h-4 text-red-400 shrink-0" />
+                                                    <span className="text-xs text-white truncate flex-1">
+                                                        {group.negativeVideoFile?.name || "Video"}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleRemoveNegativeVideo}
+                                                        className="p-0.5 hover:bg-white/10 rounded"
+                                                    >
+                                                        <X className="w-3 h-3 text-slate-400 hover:text-white" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <label className="flex items-center gap-2 p-2 bg-slate-800/30 border border-dashed border-red-500/30 rounded-lg hover:border-red-500/50 hover:bg-slate-800/50 transition-all cursor-pointer">
+                                                    <Video className="w-4 h-4 text-red-400/60" />
+                                                    <span className="text-xs text-slate-400">Upload video</span>
+                                                    <input
+                                                        type="file"
+                                                        accept="video/*"
+                                                        onChange={handleNegativeVideoChange}
+                                                        className="hidden"
+                                                    />
+                                                </label>
+                                            )}
+                                        </div>
                                     </div>
 
                                     {/* Turns drop zone */}

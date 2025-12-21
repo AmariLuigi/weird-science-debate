@@ -541,11 +541,37 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
               : undefined;
           }
 
+          // Handle positive video URL creation/cleanup
+          let newPositiveVideoUrl = g.positiveVideoUrl;
+          if (updates.positiveVideoFile !== undefined) {
+            if (g.positiveVideoUrl) {
+              URL.revokeObjectURL(g.positiveVideoUrl);
+            }
+            newPositiveVideoUrl = updates.positiveVideoFile
+              ? URL.createObjectURL(updates.positiveVideoFile)
+              : undefined;
+          }
+
+          // Handle negative video URL creation/cleanup
+          let newNegativeVideoUrl = g.negativeVideoUrl;
+          if (updates.negativeVideoFile !== undefined) {
+            if (g.negativeVideoUrl) {
+              URL.revokeObjectURL(g.negativeVideoUrl);
+            }
+            newNegativeVideoUrl = updates.negativeVideoFile
+              ? URL.createObjectURL(updates.negativeVideoFile)
+              : undefined;
+          }
+
           return {
             ...g,
             ...updates,
             imageUrl:
               updates.imageFile !== undefined ? newImageUrl : g.imageUrl,
+            positiveVideoUrl:
+              updates.positiveVideoFile !== undefined ? newPositiveVideoUrl : g.positiveVideoUrl,
+            negativeVideoUrl:
+              updates.negativeVideoFile !== undefined ? newNegativeVideoUrl : g.negativeVideoUrl,
           };
         }),
       }));
@@ -556,8 +582,10 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
   const removeQuestionGroup = useCallback((id: string) => {
     setState((prev) => {
       const group = prev.questionGroups.find((g) => g.id === id);
-      if (group?.imageUrl) {
-        URL.revokeObjectURL(group.imageUrl);
+      if (group) {
+        if (group.imageUrl) URL.revokeObjectURL(group.imageUrl);
+        if (group.positiveVideoUrl) URL.revokeObjectURL(group.positiveVideoUrl);
+        if (group.negativeVideoUrl) URL.revokeObjectURL(group.negativeVideoUrl);
       }
       return {
         ...prev,

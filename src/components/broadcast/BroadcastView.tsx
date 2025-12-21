@@ -98,6 +98,8 @@ export function BroadcastView() {
   const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
   const [turnElapsedTime, setTurnElapsedTime] = useState(0);
   const [debateElapsedTime, setDebateElapsedTime] = useState(0);
+  const [isPlayingDecisionVideo, setIsPlayingDecisionVideo] = useState(false);
+  const [decisionVideoUrl, setDecisionVideoUrl] = useState<string | null>(null);
   const hasAutoStartedRef = useRef(false);
   const subtitleIntervalRef = useRef<number | null>(null);
   const timerIntervalRef = useRef<number | null>(null);
@@ -153,6 +155,34 @@ export function BroadcastView() {
     ? "Host Speaking"
     : `Turn ${currentParticipantTurnCount} of ${totalParticipantTurns}`;
 
+  // Helper to move to next turn or finish
+  const moveToNextTurnOrFinish = useCallback(() => {
+    if (state.currentTurnIndex < orderedTurns.length - 1) {
+      if (introOutroConfig.transitionSoundUrl) {
+        backgroundAudio.playTransitionSound(
+          introOutroConfig.transitionSoundUrl,
+          introOutroConfig.transitionSoundVolume,
+        );
+      }
+      nextTurn();
+    } else {
+      setIsPlaying(false);
+      if (introOutroConfig.enableOutro) {
+        setBroadcastPhase("outro");
+      } else {
+        setIsFinished(true);
+      }
+    }
+  }, [
+    state.currentTurnIndex,
+    orderedTurns.length,
+    nextTurn,
+    setIsPlaying,
+    introOutroConfig,
+    backgroundAudio,
+    setBroadcastPhase,
+  ]);
+
   // Handle when a single audio track ends
   const handleAudioEnded = useCallback(() => {
     console.log(
@@ -169,38 +199,45 @@ export function BroadcastView() {
       setCurrentAudioIndex((prev) => prev + 1);
     } else {
       console.log(
-        "[BroadcastView] All audio tracks finished, moving to next turn",
+        "[BroadcastView] All audio tracks finished",
       );
       setCurrentAudioIndex(0);
 
-      if (state.currentTurnIndex < orderedTurns.length - 1) {
-        if (introOutroConfig.transitionSoundUrl) {
-          backgroundAudio.playTransitionSound(
-            introOutroConfig.transitionSoundUrl,
-            introOutroConfig.transitionSoundVolume,
-          );
-        }
-        nextTurn();
+      // Check if current turn has a decision and group has decision video
+      const group = currentTurn ? getGroupForTurn(currentTurn.id) : undefined;
+      const decision = currentTurn?.decision;
+      let videoUrl: string | undefined;
+
+      if (decision === 'positive' && group?.positiveVideoUrl) {
+        videoUrl = group.positiveVideoUrl;
+      } else if (decision === 'negative' && group?.negativeVideoUrl) {
+        videoUrl = group.negativeVideoUrl;
+      }
+
+      if (videoUrl) {
+        console.log("[BroadcastView] Playing decision video:", decision);
+        setDecisionVideoUrl(videoUrl);
+        setIsPlayingDecisionVideo(true);
       } else {
-        setIsPlaying(false);
-        if (introOutroConfig.enableOutro) {
-          setBroadcastPhase("outro");
-        } else {
-          setIsFinished(true);
-        }
+        // No decision video, move to next turn
+        moveToNextTurnOrFinish();
       }
     }
   }, [
     currentAudioIndex,
     totalAudioTracks,
-    state.currentTurnIndex,
-    orderedTurns.length,
-    nextTurn,
-    setIsPlaying,
-    introOutroConfig,
-    backgroundAudio,
-    setBroadcastPhase,
+    currentTurn,
+    getGroupForTurn,
+    moveToNextTurnOrFinish,
   ]);
+
+  // Handle when decision video ends
+  const handleDecisionVideoEnded = useCallback(() => {
+    console.log("[BroadcastView] Decision video ended");
+    setIsPlayingDecisionVideo(false);
+    setDecisionVideoUrl(null);
+    moveToNextTurnOrFinish();
+  }, [moveToNextTurnOrFinish]);
 
   // Handle video time update for subtitles
   const handleVideoTimeUpdate = useCallback(
@@ -702,19 +739,22 @@ export function BroadcastView() {
                 participants={state.participants}
                 host={state.host}
                 activeParticipantId={
-                  state.isPlaying && !isHostTurn
+                  state.isPlaying && !isHostTurn && !isPlayingDecisionVideo
                     ? currentTurn?.participantId || null
                     : null
                 }
-                isHostActive={state.isPlaying && isHostTurn}
+                isHostActive={state.isPlaying && isHostTurn && !isPlayingDecisionVideo}
                 analyserNode={isVideoTurn ? null : analyserNode}
-                currentSubtitle={currentSubtitle}
+                currentSubtitle={isPlayingDecisionVideo ? null : currentSubtitle}
                 isPlaying={state.isPlaying}
                 currentTurnVideoUrl={currentTurn?.videoUrl}
                 onVideoEnded={handleAudioEnded}
                 onVideoTimeUpdate={handleVideoTimeUpdate}
                 isShorts={isShorts}
-                topicImageUrl={topicImageUrl}
+                topicImageUrl={isPlayingDecisionVideo ? undefined : topicImageUrl}
+                isPlayingDecisionVideo={isPlayingDecisionVideo}
+                decisionVideoUrl={decisionVideoUrl}
+                onDecisionVideoEnded={handleDecisionVideoEnded}
               />
             </div>
           ) : (

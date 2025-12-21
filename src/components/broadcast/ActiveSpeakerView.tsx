@@ -21,6 +21,10 @@ interface ActiveSpeakerViewProps {
   // Shorts mode props
   isShorts?: boolean;
   topicImageUrl?: string;
+  // Decision video props
+  isPlayingDecisionVideo?: boolean;
+  decisionVideoUrl?: string | null;
+  onDecisionVideoEnded?: () => void;
 }
 
 export function ActiveSpeakerView({
@@ -37,6 +41,9 @@ export function ActiveSpeakerView({
   debugLayout = false,
   isShorts = false,
   topicImageUrl,
+  isPlayingDecisionVideo = false,
+  decisionVideoUrl,
+  onDecisionVideoEnded,
 }: ActiveSpeakerViewProps) {
   // Determine who is the active speaker
   // When not playing, default to first participant or host
@@ -161,7 +168,24 @@ export function ActiveSpeakerView({
       {/* ===== CENTER STAGE - Active Speaker ===== */}
       <div className="broadcast-stage overflow-hidden">
         <AnimatePresence mode="wait">
-          {activeSpeaker?.data ? (
+          {/* Decision Video Player - Shows after participant speech */}
+          {isPlayingDecisionVideo && decisionVideoUrl ? (
+            <motion.div
+              key="decision-video"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4 }}
+              className="w-full h-full flex items-center justify-center bg-black"
+            >
+              <video
+                src={decisionVideoUrl}
+                autoPlay
+                onEnded={onDecisionVideoEnded}
+                className="w-full h-full object-contain"
+              />
+            </motion.div>
+          ) : activeSpeaker?.data ? (
             // Check if we should show split layout (Shorts mode with topic image from a Question Group)
             // Host turns OUTSIDE groups won't have topicImageUrl, so they show full screen
             // Host turns INSIDE groups will have topicImageUrl, so they show split layout
