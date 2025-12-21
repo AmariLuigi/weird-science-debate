@@ -43,7 +43,24 @@ function getTurnAudioData(
   return audioData;
 }
 
-// Shorts wrapper component for vertical layout - defined outside to prevent recreation
+// Standard wrapper component for horizontal 16:9 layout - defined outside to prevent recreation
+function StandardWrapper({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-slate-950">
+      {/* Dark background that fills the rest */}
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-900 to-slate-950" />
+      {/* Centered horizontal container */}
+      <div
+        className="relative w-full h-full max-w-screen overflow-hidden"
+        style={{ aspectRatio: '16/9', maxHeight: 'calc(100vw * 9 / 16)' }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// Shorts wrapper component for vertical 9:16 layout - defined outside to prevent recreation
 function ShortsWrapper({ children }: { children: React.ReactNode }) {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-slate-950">
@@ -514,7 +531,7 @@ export function BroadcastView() {
       />
     );
 
-    return isShorts ? <ShortsWrapper>{introContent}</ShortsWrapper> : introContent;
+    return isShorts ? <ShortsWrapper>{introContent}</ShortsWrapper> : <StandardWrapper>{introContent}</StandardWrapper>;
   }
 
   // Render outro sequence
@@ -533,7 +550,7 @@ export function BroadcastView() {
       />
     );
 
-    return isShorts ? <ShortsWrapper>{outroContent}</ShortsWrapper> : outroContent;
+    return isShorts ? <ShortsWrapper>{outroContent}</ShortsWrapper> : <StandardWrapper>{outroContent}</StandardWrapper>;
   }
 
   // Main debate content
@@ -768,5 +785,5 @@ export function BroadcastView() {
     </div>
   );
 
-  return isShorts ? <ShortsWrapper>{debateContent}</ShortsWrapper> : debateContent;
+  return isShorts ? <ShortsWrapper>{debateContent}</ShortsWrapper> : <StandardWrapper>{debateContent}</StandardWrapper>;
 }

@@ -56,6 +56,7 @@ export interface FlowTemplateStep {
   type: TurnType;
   participantSlot: "host" | "p1" | "p2";
   label: string;
+  defaultVideoUrl?: string; // Optional default video URL for host turns
 }
 
 // Flow template - defines a complete debate structure
@@ -152,20 +153,20 @@ export const FLOW_TEMPLATES: FlowTemplate[] = [
     description: "13-step broadcast-style flow with host segments, opening statements, rebuttals, and closing",
     steps: [
       // Phase 1: Introduction
-      { type: "host", participantSlot: "host", label: "Host: Welcome & Topic" },
+      { type: "host", participantSlot: "host", label: "Host: Welcome & Topic", defaultVideoUrl: "/HOST INTRO.mov" },
       { type: "intro_statement", participantSlot: "p1", label: "P1: Opening Statement" },
       { type: "intro_statement", participantSlot: "p2", label: "P2: Opening Statement" },
       // Phase 2: The Clash
-      { type: "host", participantSlot: "host", label: "Host: Segue to Rebuttals" },
+      { type: "host", participantSlot: "host", label: "Host: Segue to Rebuttals", defaultVideoUrl: "/generic_host_segue final.mov" },
       { type: "counter_attack", participantSlot: "p1", label: "P1: Counter Attack" },
       { type: "defense", participantSlot: "p2", label: "P2: Defense" },
       { type: "counter_attack", participantSlot: "p2", label: "P2: Counter Attack" },
       { type: "defense", participantSlot: "p1", label: "P1: Defense" },
       // Phase 3: Conclusion
-      { type: "host", participantSlot: "host", label: "Host: Move to Closing" },
+      { type: "host", participantSlot: "host", label: "Host: Move to Closing", defaultVideoUrl: "/generic_host_closing_setup final.mov" },
       { type: "closing", participantSlot: "p1", label: "P1: Closing Argument" },
       { type: "closing", participantSlot: "p2", label: "P2: Closing Argument" },
-      { type: "host", participantSlot: "host", label: "Host: Final Sign-off" },
+      { type: "host", participantSlot: "host", label: "Host: Final Sign-off", defaultVideoUrl: "/generic_host_signoff final.mov" },
     ],
   },
   {

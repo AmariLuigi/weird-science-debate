@@ -240,15 +240,27 @@ export function AudioEnhancementsSection() {
                 <span className="text-sm font-medium text-white">Outro Host Video</span>
               </div>
 
-              {introOutroConfig.outroVideoFile ? (
+              {introOutroConfig.outroVideoFile || introOutroConfig.outroVideoUrl ? (
                 <div className="flex items-center gap-3 px-4 py-3 bg-slate-800/50 border border-primary/30 rounded-lg">
-                  <Play className="w-5 h-5 text-primary" />
+                  <div className="relative w-12 h-12 rounded overflow-hidden flex-shrink-0 bg-slate-700">
+                    <video
+                      src={introOutroConfig.outroVideoUrl}
+                      className="w-full h-full object-cover"
+                      muted
+                      loop
+                      autoPlay
+                      playsInline
+                    />
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm text-white truncate">{introOutroConfig.outroVideoFile.name}</div>
+                    <div className="text-sm text-white truncate">
+                      {introOutroConfig.outroVideoFile?.name ||
+                        (introOutroConfig.outroVideoUrl ? decodeURIComponent(introOutroConfig.outroVideoUrl.split('/').pop() || 'Video') : 'Video')}
+                    </div>
                     <div className="text-xs text-slate-400">Video file</div>
                   </div>
                   <button
-                    onClick={() => updateIntroOutroConfig({ outroVideoFile: undefined })}
+                    onClick={() => updateIntroOutroConfig({ outroVideoFile: undefined, outroVideoUrl: undefined })}
                     className="p-1 hover:bg-white/10 rounded transition-colors"
                   >
                     <X className="w-4 h-4 text-slate-400 hover:text-white" />

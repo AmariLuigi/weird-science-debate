@@ -474,7 +474,7 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
             ? "bg-gradient-to-r from-slate-900/50 to-slate-800/50"
             : "bg-gradient-to-r from-slate-900/30 to-slate-800/30",
           turn.isHostTurn &&
-            "border-l-2 border-l-brand-teal/50 bg-brand-teal/5",
+          "border-l-2 border-l-brand-teal/50 bg-brand-teal/5",
         )}
       >
         <div className="flex items-start gap-4 p-4">
@@ -595,7 +595,7 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm text-white truncate">
-                          {turn.videoFile?.name || "Video"}
+                          {turn.videoFile?.name || (turn.videoUrl ? decodeURIComponent(turn.videoUrl.split('/').pop() || 'Video') : 'Video')}
                         </div>
                         <div className="text-xs text-brand-teal flex items-center gap-1">
                           <Video className="w-3 h-3" />

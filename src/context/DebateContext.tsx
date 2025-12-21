@@ -28,6 +28,7 @@ const defaultIntroOutroConfig: IntroOutroConfig = {
   introMusicVolume: 0.3,
   outroMusicVolume: 0.3,
   transitionSoundVolume: 0.5,
+  outroVideoUrl: "/HOST OUTRO.mov",
 };
 
 const initialState: DebateState = {
@@ -410,6 +411,8 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
             turnType: step.type,
             duration: turnTypeConfig?.expectedDuration,
             audioTracks: [],
+            // Auto-populate video URL from template defaults
+            videoUrl: step.defaultVideoUrl,
           };
         });
 
