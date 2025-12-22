@@ -10,7 +10,6 @@ import {
     GripVertical,
     Video,
     ThumbsUp,
-    ThumbsDown,
 } from "lucide-react";
 import {
     DndContext,
@@ -318,7 +317,7 @@ export const QuestionGroupCard = forwardRef<HTMLDivElement, QuestionGroupCardPro
                                         {/* Negative Decision Video */}
                                         <div className="space-y-1">
                                             <div className="flex items-center gap-1.5 text-xs text-red-400">
-                                                <ThumbsDown className="w-3.5 h-3.5" />
+                                                <ThumbsUp className="w-3.5 h-3.5" />
                                                 <span>Negative Outcome</span>
                                             </div>
                                             {group.negativeVideoUrl ? (

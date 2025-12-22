@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { ThumbsUp, ThumbsDown } from "lucide-react";
+import { ThumbsUp } from "lucide-react";
 import { QuestionGroup, DebateTurn, Participant } from "@/types/debate";
 import { cn } from "@/lib/utils";
 import { CSSProperties, useEffect, useState, useRef, useCallback } from "react";
@@ -365,7 +365,7 @@ export function Scoreboard({ questionGroups, turns, participants, currentTurnInd
                 </motion.div>
                 <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-red-400">{negativeLabel}</span>
-                    <ThumbsDown className="w-5 h-5 text-red-400" />
+                    <ThumbsUp className="w-5 h-5 text-red-400" />
                 </div>
             </div>
         </motion.div>

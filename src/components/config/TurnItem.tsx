@@ -15,7 +15,6 @@ import {
   Clock,
   AlertTriangle,
   ThumbsUp,
-  ThumbsDown,
   Play,
   Pause,
   Volume2,
@@ -973,7 +972,7 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
                                 : "bg-slate-800/50 border border-slate-600/30 text-slate-400 hover:border-red-500/30 hover:text-red-400"
                             )}
                           >
-                            <ThumbsDown className="w-3.5 h-3.5" />
+                            <ThumbsUp className="w-3.5 h-3.5" />
                             Negative
                           </button>
                         </div>
