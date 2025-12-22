@@ -27,15 +27,45 @@ export function ConfigurationView() {
     if (state.turns.length === 0) {
       return "Add at least one speaking turn";
     }
+
+    // Helper to check if a turn has audio (either legacy audioUrl or audioTracks)
+    const hasAudio = (t: typeof state.turns[0]) => {
+      if (t.audioUrl) return true;
+      if (t.audioTracks && t.audioTracks.some(track => track.audioUrl)) return true;
+      // Host turns with video don't need separate audio
+      if (t.isHostTurn && t.videoUrl) return true;
+      return false;
+    };
+
     const invalidParticipantTurns = state.turns.filter(
-      (t) => !t.isHostTurn && (!t.participantId || !t.audioUrl),
+      (t) => !t.isHostTurn && (!t.participantId || !hasAudio(t)),
     );
     const invalidHostTurns = state.turns.filter(
-      (t) => t.isHostTurn && !t.audioUrl,
+      (t) => t.isHostTurn && !hasAudio(t),
     );
+
+    // Debug: log invalid turns
+    if (invalidParticipantTurns.length > 0 || invalidHostTurns.length > 0) {
+      console.log("[Validation] Invalid turns:", {
+        participant: invalidParticipantTurns.map(t => ({ id: t.id, title: t.title, participantId: t.participantId, hasAudioUrl: !!t.audioUrl, audioTracks: t.audioTracks?.length || 0 })),
+        host: invalidHostTurns.map(t => ({ id: t.id, title: t.title, hasAudioUrl: !!t.audioUrl, hasVideoUrl: !!t.videoUrl })),
+      });
+    }
+
     const totalInvalid =
       invalidParticipantTurns.length + invalidHostTurns.length;
     if (totalInvalid > 0) {
+      // Show specific turn name if only one is invalid
+      if (totalInvalid === 1) {
+        const invalidTurn = invalidParticipantTurns[0] || invalidHostTurns[0];
+        const turnName = invalidTurn.title || `Turn #${state.turns.findIndex(t => t.id === invalidTurn.id) + 1}`;
+        if (invalidHostTurns.length > 0) {
+          return `"${turnName}" needs audio or video`;
+        } else {
+          return `"${turnName}" needs a speaker and audio file`;
+        }
+      }
+
       if (invalidHostTurns.length > 0 && invalidParticipantTurns.length > 0) {
         return `${totalInvalid} turn(s) need audio files or speaker selection`;
       } else if (invalidHostTurns.length > 0) {

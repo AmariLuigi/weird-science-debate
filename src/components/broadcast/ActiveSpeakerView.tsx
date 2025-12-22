@@ -176,14 +176,43 @@ export function ActiveSpeakerView({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.4 }}
-              className="w-full h-full flex items-center justify-center bg-black"
+              className="w-full h-full flex flex-col overflow-hidden"
+              style={{ maxHeight: "100%" }}
             >
-              <video
-                src={decisionVideoUrl}
-                autoPlay
-                onEnded={onDecisionVideoEnded}
-                className="w-full h-full object-contain"
-              />
+              {/* Decision Video - Same size as topic image (45% of height) */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3 }}
+                className="flex items-center justify-center p-2 relative overflow-hidden"
+                style={{ flex: "0 0 45%" }}
+              >
+                <video
+                  src={decisionVideoUrl}
+                  autoPlay
+                  onEnded={onDecisionVideoEnded}
+                  className="max-h-full max-w-full object-contain rounded-xl shadow-2xl"
+                  ref={(el) => { if (el) el.playbackRate = 1.5; }}
+                />
+              </motion.div>
+
+              {/* Divider */}
+              <div className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mx-8 flex-shrink-0" />
+
+              {/* Bottom Section - Empty/Dark (55% of height) */}
+              <div
+                className="flex items-center justify-center"
+                style={{ flex: "0 0 55%" }}
+              >
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                  className="text-center"
+                >
+                  <span className="text-lg font-medium text-white/60">Decision Revealed...</span>
+                </motion.div>
+              </div>
             </motion.div>
           ) : activeSpeaker?.data ? (
             // Check if we should show split layout (Shorts mode with topic image from a Question Group)
