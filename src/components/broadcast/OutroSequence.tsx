@@ -156,7 +156,7 @@ export function OutroSequence({
           transition={{ delay: 0.7 }}
           className={cn("w-full z-10", isShorts ? "mb-6 px-2" : "mb-8")}
         >
-          <h3 className={cn("text-slate-400 mb-4 text-center font-bold tracking-wider uppercase opacity-80", isShorts ? "text-[10px]" : "text-lg")}>
+          <h3 className={cn("text-slate-400 mb-4 text-center font-bold tracking-wider uppercase opacity-80", isShorts ? "text-sm" : "text-lg")}>
             {outroConfig?.participantAckText || "Thank you to our participants"}
           </h3>
           <div className={cn("flex flex-wrap justify-center", isShorts ? "gap-2" : "gap-3")}>
