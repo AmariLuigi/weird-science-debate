@@ -101,6 +101,7 @@ export function BroadcastView() {
   const [debateElapsedTime, setDebateElapsedTime] = useState(0);
   const [isPlayingDecisionVideo, setIsPlayingDecisionVideo] = useState(false);
   const [decisionVideoUrl, setDecisionVideoUrl] = useState<string | null>(null);
+  const [isPlayingScoreboardAnimation, setIsPlayingScoreboardAnimation] = useState(false);
   const hasAutoStartedRef = useRef(false);
   const subtitleIntervalRef = useRef<number | null>(null);
   const timerIntervalRef = useRef<number | null>(null);
@@ -226,10 +227,18 @@ export function BroadcastView() {
         videoUrl = group.negativeVideoUrl;
       }
 
-      if (videoUrl) {
-        console.log("[BroadcastView] Playing decision video:", decision);
-        setDecisionVideoUrl(videoUrl);
-        setIsPlayingDecisionVideo(true);
+      if (videoUrl && decision) {
+        console.log("[BroadcastView] Starting scoreboard animation, then decision video:", decision);
+
+        // First, trigger scoreboard animation
+        setIsPlayingScoreboardAnimation(true);
+
+        // After animation completes (1.5s), play decision video
+        setTimeout(() => {
+          setIsPlayingScoreboardAnimation(false);
+          setDecisionVideoUrl(videoUrl!);
+          setIsPlayingDecisionVideo(true);
+        }, 1500);
       } else {
         // No decision video, move to next turn
         moveToNextTurnOrFinish();
@@ -753,7 +762,9 @@ export function BroadcastView() {
             <Scoreboard
               questionGroups={state.questionGroups}
               turns={orderedTurns}
+              participants={state.participants}
               currentTurnIndex={state.currentTurnIndex}
+              triggerAnimation={isPlayingScoreboardAnimation}
             />
           </div>
         )}
