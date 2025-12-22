@@ -71,13 +71,13 @@ export function CircularVisualizer({
     const centerX = size / 2;
     const centerY = size / 2;
 
-    // Avatar is 280px, so radius should be half of that (140px)
-    // The ring should sit just outside the avatar
-    const avatarRadius = 140; // Half of 280px avatar
-    const ringRadius = avatarRadius + 10; // Ring sits 10px outside avatar edge
+    // Calculate radii based on size (not hardcoded)
+    // Avatar takes ~65% of the container, ring sits just outside
+    const avatarRadius = (size / 2) * 0.65; // Avatar radius relative to size
+    const ringRadius = avatarRadius + 5; // Ring sits 5px outside avatar edge
     const barCount = 64;
-    const barWidth = 3;
-    const maxBarHeight = 30;
+    const barWidth = Math.max(2, size / 100); // Scale bar width with size
+    const maxBarHeight = size / 10; // Scale bar height with size
 
     // Color configurations - Brand palette teal to mint
     const colors = {

@@ -348,7 +348,30 @@ export const QuestionGroupCard = forwardRef<HTMLDivElement, QuestionGroupCardPro
                                                 </label>
                                             )}
                                         </div>
+
+                                        {/* Scoreboard Labels */}
+                                        <div className="space-y-1">
+                                            <label className="text-xs text-green-400">Scoreboard Label</label>
+                                            <input
+                                                type="text"
+                                                value={group.positiveLabel || ""}
+                                                onChange={(e) => updateQuestionGroup(group.id, { positiveLabel: e.target.value })}
+                                                placeholder="e.g., Accept, Yes, Agree"
+                                                className="w-full px-2 py-1.5 bg-slate-800/50 border border-green-500/30 rounded-lg text-xs text-white placeholder-slate-500 focus:border-green-500/60 focus:outline-none"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-xs text-red-400">Scoreboard Label</label>
+                                            <input
+                                                type="text"
+                                                value={group.negativeLabel || ""}
+                                                onChange={(e) => updateQuestionGroup(group.id, { negativeLabel: e.target.value })}
+                                                placeholder="e.g., Reject, No, Disagree"
+                                                className="w-full px-2 py-1.5 bg-slate-800/50 border border-red-500/30 rounded-lg text-xs text-white placeholder-slate-500 focus:border-red-500/60 focus:outline-none"
+                                            />
+                                        </div>
                                     </div>
+
 
                                     {/* Turns drop zone */}
                                     <div

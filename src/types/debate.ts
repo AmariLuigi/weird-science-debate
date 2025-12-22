@@ -79,6 +79,9 @@ export interface QuestionGroup {
   positiveVideoUrl?: string;
   negativeVideoFile?: File;
   negativeVideoUrl?: string;
+  // Scoreboard labels
+  positiveLabel?: string;  // e.g., "Accept", "Yes", "Agree"
+  negativeLabel?: string;  // e.g., "Reject", "No", "Disagree"
 }
 
 // Participant decision for a turn (Shorts mode)

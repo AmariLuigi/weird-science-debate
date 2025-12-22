@@ -94,7 +94,7 @@ export function VideoVisualizer({
   useEffect(() => {
     return () => {
       if (audioContextRef.current) {
-        audioContextRef.current.close().catch(() => {});
+        audioContextRef.current.close().catch(() => { });
         audioContextRef.current = null;
         analyserRef.current = null;
         sourceRef.current = null;
@@ -175,13 +175,13 @@ export function VideoVisualizer({
     const centerX = size / 2;
     const centerY = size / 2;
 
-    // Avatar is 280px, video should fit inside that
-    const avatarRadius = 140; // Half of 280px avatar
-    const videoRadius = avatarRadius - 10; // Video slightly inside avatar bounds
-    const visualizerRadius = avatarRadius + 10; // Ring sits outside avatar
+    // Calculate radii based on size (not hardcoded)
+    const avatarRadius = (size / 2) - 20; // Leave some padding from edge
+    const videoRadius = avatarRadius - 5; // Video slightly inside avatar bounds
+    const visualizerRadius = avatarRadius + 5; // Ring sits outside avatar
     const barCount = 64;
-    const barWidth = 3;
-    const maxBarHeight = 30;
+    const barWidth = Math.max(2, size / 100); // Scale bar width with size
+    const maxBarHeight = size / 12; // Scale bar height with size
 
     // Draw video inside circular mask if video is ready
     if (video && video.readyState >= 2) {

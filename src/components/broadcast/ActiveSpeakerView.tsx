@@ -81,7 +81,8 @@ export function ActiveSpeakerView({
   const VISUALIZER_SIZE = AVATAR_ACTIVE_SIZE + VISUALIZER_PADDING;
 
   // Check if we should show video instead of avatar
-  const hasVideo = isHostActive && currentTurnVideoUrl;
+  // Show video for any turn that has a video URL (host video turns)
+  const hasVideo = !!currentTurnVideoUrl;
 
   return (
     <div className={cn("broadcast-grid", debugLayout && "debug-layout")}>
@@ -272,13 +273,13 @@ export function ActiveSpeakerView({
                   style={{ flex: "0 0 55%" }}
                 >
                   {/* Compact visualizer for Shorts */}
-                  <div className="relative" style={{ width: 180, height: 180 }}>
+                  <div className="relative" style={{ width: 280, height: 280 }}>
                     {/* Ambient glow */}
                     <motion.div
                       className="absolute rounded-full pointer-events-none"
                       style={{
-                        width: 400,
-                        height: 400,
+                        width: 500,
+                        height: 500,
                         top: -110,
                         left: -110,
                         background: "radial-gradient(circle, rgba(12, 242, 93, 0.25) 0%, transparent 70%)",
@@ -295,56 +296,69 @@ export function ActiveSpeakerView({
                       }}
                     />
 
-                    {/* Circular Visualizer */}
-                    <CircularVisualizer
-                      analyserNode={analyserNode}
-                      isActive={isPlaying}
-                      size={180}
-                      color="mint"
-                    />
+                    {/* Video or Circular Visualizer */}
+                    {hasVideo ? (
+                      <VideoVisualizer
+                        videoUrl={currentTurnVideoUrl!}
+                        isActive={isPlaying}
+                        isPlaying={isPlaying}
+                        size={280}
+                        onEnded={onVideoEnded}
+                        onTimeUpdate={onVideoTimeUpdate}
+                      />
+                    ) : (
+                      <CircularVisualizer
+                        analyserNode={analyserNode}
+                        isActive={isPlaying}
+                        size={280}
+                        color="mint"
+                      />
+                    )}
 
-                    {/* Avatar in center */}
-                    <div
-                      className="absolute rounded-full overflow-hidden border-2 border-primary/30"
-                      style={{
-                        width: 120,
-                        height: 120,
-                        top: 30,
-                        left: 30,
-                      }}
-                    >
-                      {activeSpeaker.data.avatarUrl ? (
-                        <motion.img
-                          src={activeSpeaker.data.avatarUrl}
-                          alt={activeSpeaker.data.name}
-                          className="w-full h-full object-cover"
-                          animate={{
-                            scale: isPlaying ? [1, 1.03, 1] : 1,
-                          }}
-                          transition={{
-                            duration: 2,
-                            repeat: Infinity,
-                            ease: "easeInOut",
-                          }}
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-primary/30 to-brand-teal/30 flex items-center justify-center">
-                          <span className="text-3xl font-bold text-white/80">
-                            {activeSpeaker.data.name?.charAt(0)?.toUpperCase() || "?"}
-                          </span>
-                        </div>
-                      )}
-                    </div>
+                    {/* Avatar in center - only show when not playing video */}
+                    {!hasVideo && (
+                      <div
+                        className="absolute rounded-full overflow-hidden border-2 border-primary/30"
+                        style={{
+                          width: 180,
+                          height: 180,
+                          top: 50,
+                          left: 50,
+                        }}
+                      >
+                        {activeSpeaker.data.avatarUrl ? (
+                          <motion.img
+                            src={activeSpeaker.data.avatarUrl}
+                            alt={activeSpeaker.data.name}
+                            className="w-full h-full object-cover"
+                            animate={{
+                              scale: isPlaying ? [1, 1.03, 1] : 1,
+                            }}
+                            transition={{
+                              duration: 2,
+                              repeat: Infinity,
+                              ease: "easeInOut",
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-primary/30 to-brand-teal/30 flex items-center justify-center">
+                            <span className="text-3xl font-bold text-white/80">
+                              {activeSpeaker.data.name?.charAt(0)?.toUpperCase() || "?"}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     {/* Pulsing ring */}
                     {isPlaying && (
                       <motion.div
                         className="absolute rounded-full border-2 border-primary/30 pointer-events-none"
                         style={{
-                          width: 140,
-                          height: 140,
-                          top: 20,
-                          left: 20,
+                          width: 200,
+                          height: 200,
+                          top: 40,
+                          left: 40,
                         }}
                         animate={{
                           scale: [1, 1.2, 1],

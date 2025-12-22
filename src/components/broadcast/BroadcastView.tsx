@@ -10,6 +10,7 @@ import { PlaybackControls } from "./PlaybackControls";
 import { IntroSequence } from "./IntroSequence";
 import { OutroSequence } from "./OutroSequence";
 import { TimerDisplay, DebateTimer } from "./TimerDisplay";
+import { Scoreboard } from "./Scoreboard";
 import { Button } from "@/components/ui/Button";
 import { SubtitleCue, DebateTurn, TURN_TYPE_CONFIGS } from "@/types/debate";
 import { getCurrentCue } from "@/lib/srtParser";
@@ -125,6 +126,17 @@ export function BroadcastView() {
   const audioData = currentTurn ? getTurnAudioData(currentTurn) : [];
   const hasAudioTracks = audioData.length > 0;
   const isVideoTurn = isHostTurn && !!currentTurn?.videoUrl && !hasAudioTracks;
+
+  // Debug: Log turn detection
+  console.log("[BroadcastView] Turn detection:", {
+    turnIndex: state.currentTurnIndex,
+    isHostTurn,
+    hasVideoUrl: !!currentTurn?.videoUrl,
+    hasAudioTracks,
+    audioDataLength: audioData.length,
+    isVideoTurn,
+    turnTitle: currentTurn?.title,
+  });
 
   // Get topic image from Question Group (Shorts mode)
   const currentGroup = currentTurn ? getGroupForTurn(currentTurn.id) : undefined;
@@ -730,6 +742,20 @@ export function BroadcastView() {
               />
             )}
           </>
+        )}
+
+        {/* Scoreboard - Shorts mode only, when groups have labels */}
+        {isShorts && state.questionGroups.some(g => g.positiveLabel || g.negativeLabel) && (
+          <div
+            className="absolute bottom-24 left-0 right-0 flex justify-center z-20"
+            style={{ paddingLeft: "var(--broadcast-rail-width)" }}
+          >
+            <Scoreboard
+              questionGroups={state.questionGroups}
+              turns={orderedTurns}
+              currentTurnIndex={state.currentTurnIndex}
+            />
+          </div>
         )}
 
         <AnimatePresence mode="wait">
