@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Youtube, MessageSquare, ThumbsUp, Bell, Sparkles } from "lucide-react";
 import { Participant, Host, IntroOutroConfig } from "@/types/debate";
 import { Button } from "@/components/ui/Button";
+import { cn } from "@/lib/utils";
 
 interface OutroSequenceProps {
   title: string;
@@ -15,16 +16,16 @@ interface OutroSequenceProps {
   outroMusicVolume?: number;
   outroVideoUrl?: string;
   outroConfig?: IntroOutroConfig;
+  isShorts?: boolean;
 }
 
 export function OutroSequence({
-  title,
   participants,
-  participantTurns,
   onReplay,
   onBackToSetup,
   outroVideoUrl,
   outroConfig,
+  isShorts = false,
 }: OutroSequenceProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoEnded, setVideoEnded] = useState(false);
@@ -34,40 +35,32 @@ export function OutroSequence({
   useEffect(() => {
     const video = videoRef.current;
     if (video && outroVideoUrl) {
-      // Reset states when video changes
       setVideoEnded(false);
       setVideoFading(false);
       video.volume = 1;
 
-      video.play().catch(() => {
-        // Autoplay failed, user interaction needed
-      });
+      video.play().catch(() => { });
 
-      const fadeDuration = 2; // seconds before end to start fading
+      const fadeDuration = 2;
       let fadingStarted = false;
 
-      // Handle video timeupdate for fade effect near end
       const handleTimeUpdate = () => {
         const duration = video.duration;
         const currentTime = video.currentTime;
         const timeRemaining = duration - currentTime;
 
-        // Only process when we have valid duration
         if (!isNaN(duration) && isFinite(duration) && duration > fadeDuration) {
           if (timeRemaining <= fadeDuration) {
-            // Start fading (only set state once)
             if (!fadingStarted) {
               fadingStarted = true;
               setVideoFading(true);
             }
-            // Progressive volume fade (1.0 to 0.0 over fadeDuration)
             const volumeProgress = timeRemaining / fadeDuration;
             video.volume = Math.max(0, Math.min(1, volumeProgress));
           }
         }
       };
 
-      // Handle video ended
       const handleEnded = () => {
         video.volume = 0;
         setVideoEnded(true);
@@ -83,111 +76,116 @@ export function OutroSequence({
     }
   }, [outroVideoUrl]);
 
-  // Control video opacity when fading
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.style.opacity = videoFading || videoEnded ? '0' : '1';
     }
   }, [videoFading, videoEnded]);
 
-  // Memoize content section to prevent re-render when video states change
+  const participantSizeClasses = useMemo(() => {
+    const count = participants.length;
+    if (isShorts) {
+      if (count > 8) return "w-12 h-12";
+      if (count > 5) return "w-16 h-16";
+      return "w-20 h-20";
+    }
+    if (count > 10) return "w-16 h-16";
+    if (count > 6) return "w-20 h-20";
+    return "w-24 h-24";
+  }, [participants.length, isShorts]);
+
   const contentSection = useMemo(() => (
-    <>
-      {/* Logo shown when no video */}
+    <div className={cn(
+      "flex flex-col items-center",
+      isShorts ? "w-full max-w-[480px] px-2" : "w-full max-w-4xl px-12"
+    )}>
       {!outroVideoUrl && (
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, type: "spring" }}
-          className="mb-6 flex items-center justify-center"
+          className="mb-6 flex items-center justify-center text-center"
         >
           <motion.div
             className="relative"
-            animate={{
-              scale: [1, 1.03, 1],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
+            animate={{ scale: [1, 1.03, 1] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           >
-            {/* Glow backdrop behind logo */}
             <motion.div
               className="absolute inset-0 -z-10 blur-3xl"
               style={{
                 background: "radial-gradient(ellipse, rgba(65, 242, 143, 0.4) 0%, transparent 70%)",
                 transform: "scale(1.5)",
               }}
-              animate={{
-                opacity: [0.4, 0.8, 0.4],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
+              animate={{ opacity: [0.4, 0.8, 0.4] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             />
             <motion.img
               src="/LOGO.svg"
               alt="Weird Science"
-              className="w-[180px] md:w-[220px] h-auto drop-shadow-2xl"
-              style={{
-                filter: "drop-shadow(0 0 20px rgba(65, 242, 143, 0.3))",
-              }}
+              className={cn(
+                "h-auto drop-shadow-2xl mx-auto",
+                isShorts ? "w-[140px]" : "w-[180px] md:w-[220px]"
+              )}
+              style={{ filter: "drop-shadow(0 0 20px rgba(65, 242, 143, 0.3))" }}
             />
           </motion.div>
         </motion.div>
       )}
+
       {outroConfig?.outroHeadline && (
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.5 }}
-          className="mb-8"
+          className={cn("text-center w-full", isShorts ? "mb-6" : "mb-10")}
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-white bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-white">
+          <h2 className={cn(
+            "font-extrabold text-white bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-white leading-tight",
+            isShorts ? "text-3xl" : "text-5xl md:text-6xl"
+          )}>
             {outroConfig.outroHeadline}
           </h2>
         </motion.div>
       )}
 
-      {/* Participants Section */}
       {(outroConfig?.showParticipants ?? true) && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
-          className="mb-6"
+          className={cn("w-full z-10", isShorts ? "mb-6 px-2" : "mb-8")}
         >
-          <h3 className="text-lg text-slate-400 mb-4">
+          <h3 className={cn("text-slate-400 mb-4 text-center font-bold tracking-wider uppercase opacity-80", isShorts ? "text-[10px]" : "text-lg")}>
             {outroConfig?.participantAckText || "Thank you to our participants"}
           </h3>
-          <div className="flex flex-wrap justify-center gap-3">
+          <div className={cn("flex flex-wrap justify-center", isShorts ? "gap-2" : "gap-3")}>
             {participants.map((participant, index) => (
               <motion.div
                 key={participant.id}
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.8 + index * 0.1 }}
-                className="flex flex-col items-center"
+                className={cn(
+                  "flex flex-col items-center",
+                  isShorts ? "w-[75px]" : "w-[120px]"
+                )}
               >
-                <div className="w-16 h-16 rounded-full border-2 border-primary/50 overflow-hidden mb-2 bg-gradient-to-br from-primary/20 to-brand-teal/20">
+                <div className={cn(
+                  "rounded-full border-2 border-primary/50 overflow-hidden mb-1 bg-gradient-to-br from-primary/20 to-brand-teal/20 shrink-0",
+                  participantSizeClasses
+                )}>
                   {participant.avatarUrl ? (
-                    <img
-                      src={participant.avatarUrl}
-                      alt={participant.name}
-                      className="w-full h-full object-cover"
-                    />
+                    <img src={participant.avatarUrl} alt={participant.name} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <span className="text-xl font-bold text-white/80">
+                      <span className={cn("font-bold text-white/80", isShorts ? "text-xs" : "text-xl")}>
                         {participant.name?.charAt(0)?.toUpperCase() || "?"}
                       </span>
                     </div>
                   )}
                 </div>
-                <span className="text-base text-white font-medium">
+                <span className={cn("text-white font-bold truncate w-full text-center mt-2", isShorts ? "text-[10px]" : "text-base")}>
                   {participant.name || "Participant"}
                 </span>
               </motion.div>
@@ -196,142 +194,89 @@ export function OutroSequence({
         </motion.div>
       )}
 
-      {/* Who Won Call to Action */}
       {(outroConfig?.showWhoWonCTA ?? true) && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.9 }}
-          className="glass-panel p-5 mb-5"
+          className={cn("glass-panel w-full", isShorts ? "p-3 mb-3" : "p-5 mb-5")}
         >
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <MessageSquare className="w-7 h-7 text-primary" />
-            <span className="text-2xl font-semibold text-white">
+          <div className="flex items-center justify-center gap-3 mb-3 text-center">
+            <MessageSquare className={cn("text-primary", isShorts ? "w-5 h-5" : "w-8 h-8")} />
+            <span className={cn("font-black text-white leading-none", isShorts ? "text-2xl" : "text-3xl")}>
               {outroConfig?.ctaHeadline || "Who Won?"}
             </span>
           </div>
-          <p className="text-lg text-slate-400 mb-4">
+          <p className={cn("text-slate-200 text-center mb-6 font-semibold", isShorts ? "text-base leading-snug px-4" : "text-xl")}>
             {outroConfig?.ctaSubtext || "Drop a comment and let us know which side made the stronger case!"}
           </p>
-          <div className="flex flex-wrap justify-center gap-2">
-            {participants.map((participant) => (
-              <div
-                key={participant.id}
-                className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-primary/30 rounded-lg transition-all cursor-pointer"
-              >
-                <div className="w-6 h-6 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-brand-teal/20">
-                  {participant.avatarUrl ? (
-                    <img
-                      src={participant.avatarUrl}
-                      alt={participant.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <span className="text-sm font-bold text-white/80">
-                        {participant.name?.charAt(0)?.toUpperCase() || "?"}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <span className="text-lg text-white">{participant.name}</span>
-              </div>
-            ))}
-          </div>
         </motion.div>
       )}
 
-      {/* Engagement CTA */}
       {(outroConfig?.showEngagementCTA ?? true) && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.1 }}
-          className="glass-panel p-5 mb-6"
+          className={cn("glass-panel w-full", isShorts ? "p-5 mb-8" : "p-8 mb-12")}
         >
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Youtube className="w-7 h-7 text-red-500" />
-            <span className="text-xl font-semibold text-white">
-              Enjoyed this debate?
-            </span>
+          <div className="flex flex-col items-center justify-center gap-2 mb-5">
+            <div className="flex items-center gap-3">
+              <Youtube className={cn("text-red-500", isShorts ? "w-6 h-6" : "w-10 h-10")} />
+              <span className={cn("font-black text-white text-center", isShorts ? "text-xl" : "text-3xl")}>
+                Enjoyed this debate?
+              </span>
+            </div>
             {outroConfig?.socialHandle && (
-              <span className="text-slate-400 text-lg ml-2">@{outroConfig.socialHandle}</span>
+              <span className={cn("text-brand-sea font-bold", isShorts ? "text-lg" : "text-2xl")}>@{outroConfig.socialHandle}</span>
             )}
           </div>
-          <div className="flex flex-wrap justify-center gap-4 text-lg">
-            <motion.div
-              className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-transparent"
-              animate={{
-                scale: [1, 1.05, 1],
-                borderColor: ["rgba(12, 242, 93, 0)", "rgba(12, 242, 93, 0.5)", "rgba(12, 242, 93, 0)"],
-                boxShadow: ["0 0 0px rgba(12, 242, 93, 0)", "0 0 15px rgba(12, 242, 93, 0.3)", "0 0 0px rgba(12, 242, 93, 0)"],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                delay: 1.5,
-                ease: "easeInOut",
-              }}
-            >
-              <ThumbsUp className="w-5 h-5 text-primary" />
-              <span className="text-slate-300">Like</span>
-            </motion.div>
-            <motion.div
-              className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-transparent"
-              animate={{
-                scale: [1, 1.05, 1],
-                borderColor: ["rgba(239, 68, 68, 0)", "rgba(239, 68, 68, 0.5)", "rgba(239, 68, 68, 0)"],
-                boxShadow: ["0 0 0px rgba(239, 68, 68, 0)", "0 0 15px rgba(239, 68, 68, 0.3)", "0 0 0px rgba(239, 68, 68, 0)"],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                delay: 2,
-                ease: "easeInOut",
-              }}
-            >
-              <Bell className="w-5 h-5 text-red-500" />
-              <span className="text-slate-300">Subscribe</span>
-            </motion.div>
-            <motion.div
-              className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-transparent"
-              animate={{
-                scale: [1, 1.05, 1],
-                borderColor: ["rgba(12, 242, 93, 0)", "rgba(12, 242, 93, 0.5)", "rgba(12, 242, 93, 0)"],
-                boxShadow: ["0 0 0px rgba(12, 242, 93, 0)", "0 0 15px rgba(12, 242, 93, 0.3)", "0 0 0px rgba(12, 242, 93, 0)"],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                delay: 2.5,
-                ease: "easeInOut",
-              }}
-            >
-              <MessageSquare className="w-5 h-5 text-primary" />
-              <span className="text-slate-300">Comment</span>
-            </motion.div>
+          <div className={cn("flex flex-wrap justify-center", isShorts ? "gap-3" : "gap-5")}>
+            {[
+              { icon: ThumbsUp, label: "Like", color: "rgba(12, 242, 93, 0.5)", iconColor: "text-primary" },
+              { icon: Bell, label: "Subscribe", color: "rgba(239, 68, 68, 0.5)", iconColor: "text-red-500" },
+              { icon: MessageSquare, label: "Comment", color: "rgba(12, 242, 93, 0.5)", iconColor: "text-primary" }
+            ].map((item, idx) => (
+              <motion.div
+                key={item.label}
+                className={cn(
+                  "flex items-center gap-2 bg-white/10 rounded-xl border border-white/10 whitespace-nowrap shadow-xl",
+                  isShorts ? "px-4 py-2" : "px-7 py-4"
+                )}
+                animate={{
+                  scale: [1, 1.05, 1],
+                  borderColor: ["rgba(255, 255, 255, 0.1)", item.color, "rgba(255, 255, 255, 0.1)"],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  delay: 1.5 + idx * 0.5,
+                  ease: "easeInOut",
+                }}
+              >
+                <item.icon className={cn(item.iconColor, isShorts ? "w-5 h-5" : "w-8 h-8")} />
+                <span className={cn("text-white font-bold", isShorts ? "text-base" : "text-xl")}>{item.label}</span>
+              </motion.div>
+            ))}
           </div>
         </motion.div>
       )}
 
-      {/* Powered By Footer */}
       {(outroConfig?.showPoweredBy ?? true) && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.6 }}
-          className="mt-6 flex items-center justify-center gap-2 text-slate-500"
+          className={cn("flex items-center justify-center gap-2 text-slate-500", isShorts ? "mt-2" : "mt-6")}
         >
           <Sparkles className="w-3 h-3 text-brand-sea" />
-          <span className="text-xs">Powered by Weird Science</span>
+          <span className="text-[10px] md:text-xs">Powered by Weird Science</span>
           <Sparkles className="w-3 h-3 text-brand-sea" />
         </motion.div>
       )}
-    </>
-  ), [title, participantTurns, participants, outroVideoUrl, onReplay, onBackToSetup, outroConfig]);
+    </div>
+  ), [isShorts, participants, outroVideoUrl, outroConfig, participantSizeClasses]);
 
-  // Video section - memoized to prevent video remounting
-  // Note: we keep video states out of deps so the video element isn't recreated
   const videoSection = useMemo(() => (
     <motion.div
       initial={{ opacity: 0, scale: 0.8 }}
@@ -340,8 +285,10 @@ export function OutroSequence({
       className="relative flex items-center justify-center"
     >
       <div className="relative">
-        <div className="w-72 h-72 md:w-96 md:h-96 rounded-full overflow-hidden border-4 border-primary/50 shadow-2xl shadow-primary/30 bg-gradient-to-br from-primary/20 to-brand-teal/20 relative">
-          {/* Video layer - use regular video, not motion.video to prevent remounting */}
+        <div className={cn(
+          "rounded-full overflow-hidden border-4 border-primary/50 shadow-2xl shadow-primary/30 bg-gradient-to-br from-primary/20 to-brand-teal/20 relative shrink-0",
+          isShorts ? "w-72 h-72" : "w-96 h-96 md:w-[480px] md:h-[480px]"
+        )}>
           <video
             ref={videoRef}
             src={outroVideoUrl}
@@ -350,38 +297,15 @@ export function OutroSequence({
             style={{ opacity: 1 }}
           />
         </div>
-        {/* Animated ring around video */}
         <motion.div
           className="absolute inset-0 rounded-full border-2 border-primary/30"
-          animate={{
-            scale: [1, 1.15, 1],
-            opacity: [0.5, 0, 0.5],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-        {/* Second animated ring */}
-        <motion.div
-          className="absolute inset-0 rounded-full border border-brand-sea/20"
-          animate={{
-            scale: [1, 1.25, 1],
-            opacity: [0.3, 0, 0.3],
-          }}
-          transition={{
-            duration: 2.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 0.5,
-          }}
+          animate={{ scale: [1, 1.15, 1], opacity: [0.5, 0, 0.5] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         />
       </div>
     </motion.div>
-  ), [outroVideoUrl]);
+  ), [outroVideoUrl, isShorts]);
 
-  // Logo overlay - separate from video to control independently
   const logoOverlay = (
     <motion.div
       initial={{ opacity: 0, scale: 0.5 }}
@@ -393,7 +317,6 @@ export function OutroSequence({
       className="absolute inset-0 w-full h-full flex items-center justify-center cursor-pointer z-10"
       style={{ pointerEvents: videoFading || videoEnded ? 'auto' : 'none' }}
       onClick={() => {
-        // Reset states to replay video
         setVideoEnded(false);
         setVideoFading(false);
         if (videoRef.current) {
@@ -402,126 +325,82 @@ export function OutroSequence({
           videoRef.current.play().catch(() => { });
         }
       }}
-      title="Click to replay video"
     >
-      {/* Logo container with glow effect */}
       <motion.div
         className="relative"
-        animate={{
-          scale: [1, 1.03, 1],
-        }}
-        transition={{
-          duration: 2,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
+        animate={{ scale: [1, 1.03, 1] }}
+        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
       >
-        {/* Glow backdrop behind logo */}
-        <motion.div
-          className="absolute inset-0 -z-10 blur-3xl"
-          style={{
-            background: "radial-gradient(ellipse, rgba(65, 242, 143, 0.4) 0%, transparent 70%)",
-            transform: "scale(1.5)",
-          }}
-          animate={{
-            opacity: [0.4, 0.8, 0.4],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-
-        {/* The actual logo */}
         <motion.img
           src="/LOGO.svg"
           alt="Weird Science"
-          className="w-[200px] md:w-[280px] h-auto drop-shadow-2xl"
-          style={{
-            filter: "drop-shadow(0 0 30px rgba(65, 242, 143, 0.3))",
-          }}
+          className={cn(
+            "h-auto drop-shadow-2xl",
+            isShorts ? "w-[160px]" : "w-[200px] md:w-[280px]"
+          )}
+          style={{ filter: "drop-shadow(0 0 30px rgba(65, 242, 143, 0.3))" }}
         />
       </motion.div>
     </motion.div>
   );
 
   return (
-    <div className="absolute inset-0 z-50 bg-slate-950 flex items-center justify-center overflow-hidden">
-      {/* Background effects */}
+    <div className="absolute inset-0 z-50 bg-slate-950 flex flex-col items-center justify-center overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-b from-brand-dark/30 via-transparent to-brand-dark/30" />
-        <motion.div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] rounded-full"
-          style={{
-            background:
-              "radial-gradient(circle, rgba(12, 242, 93, 0.15) 0%, transparent 60%)",
-          }}
-          animate={{
-            scale: [1, 1.3, 1],
-            opacity: [0.2, 0.4, 0.2],
-          }}
-          transition={{
-            duration: 5,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-
-        {[...Array(20)].map((_, i) => (
+        {[...Array(15)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute w-2 h-2 rounded-full bg-primary/30"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, -100, 0],
-              opacity: [0, 1, 0],
-              scale: [0, 1.5, 0],
-            }}
-            transition={{
-              duration: 3 + Math.random() * 2,
-              repeat: Infinity,
-              delay: Math.random() * 2,
-              ease: "easeOut",
-            }}
+            className="absolute w-1 h-1 rounded-full bg-primary/20"
+            style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%` }}
+            animate={{ opacity: [0, 0.5, 0], scale: [0, 1.5, 0] }}
+            transition={{ duration: 3 + Math.random() * 2, repeat: Infinity, delay: Math.random() * 2 }}
           />
         ))}
       </div>
 
-      {/* Main content */}
-      {outroVideoUrl ? (
-        // Two-column layout when video exists
-        <div className="relative z-10 flex items-center justify-center gap-12 px-8 max-w-7xl w-full">
-          {/* Left column: Content */}
-          <div className="flex-1 text-center max-w-md">
+      <div className={cn(
+        "relative z-10 w-full flex items-center justify-center gap-6 px-4 py-8",
+        isShorts ? "flex-col max-h-full overflow-y-auto" : "flex-row max-w-7xl gap-12 px-8"
+      )}>
+        {!isShorts && outroVideoUrl && (
+          <>
+            <div className="flex-1 flex flex-col items-center justify-center">
+              {contentSection}
+            </div>
+            <div className="flex-1 flex items-center justify-center relative">
+              {videoSection}
+              {logoOverlay}
+            </div>
+          </>
+        )}
+
+        {isShorts && (
+          <div className="flex flex-col items-center gap-6 w-full py-4">
+            {outroVideoUrl && (
+              <div className="relative shrink-0">
+                {videoSection}
+                {logoOverlay}
+              </div>
+            )}
             {contentSection}
           </div>
+        )}
 
-          {/* Right column: Video with trophy overlay */}
-          <div className="flex-1 flex items-center justify-center relative">
-            {videoSection}
-            {logoOverlay}
+        {!outroVideoUrl && !isShorts && (
+          <div className="max-w-2xl w-full">
+            {contentSection}
           </div>
-        </div>
-      ) : (
-        <div className="relative z-10 text-center px-8 max-w-2xl">
-          {contentSection}
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* Hidden controls - appear on hover at bottom */}
       <div className="fixed bottom-0 left-0 right-0 z-50 group">
-        {/* Invisible hover trigger zone */}
         <div className="h-16" />
-        {/* Buttons container - slides up on hover */}
         <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-3 p-4 bg-slate-950/90 backdrop-blur-sm border-t border-white/10 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-          <Button variant="secondary" onClick={onReplay}>
+          <Button variant="secondary" onClick={onReplay} className={isShorts ? "px-3 py-1 text-xs" : ""}>
             Replay Debate
           </Button>
-          <Button onClick={onBackToSetup}>Back to Setup</Button>
+          <Button onClick={onBackToSetup} className={isShorts ? "px-3 py-1 text-xs" : ""}>Back to Setup</Button>
         </div>
       </div>
     </div>

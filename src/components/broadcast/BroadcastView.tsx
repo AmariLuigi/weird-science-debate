@@ -618,6 +618,7 @@ export function BroadcastView() {
         outroMusicVolume={introOutroConfig.outroMusicVolume}
         outroVideoUrl={introOutroConfig.outroVideoUrl}
         outroConfig={introOutroConfig}
+        isShorts={isShorts}
       />
     );
 
