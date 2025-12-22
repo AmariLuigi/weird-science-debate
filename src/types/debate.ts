@@ -216,6 +216,16 @@ export interface IntroOutroConfig {
   introMusicVolume: number;
   outroMusicVolume: number;
   transitionSoundVolume: number;
+  // Outro Customization
+  outroHeadline?: string;
+  participantAckText?: string;
+  ctaHeadline?: string;
+  ctaSubtext?: string;
+  showParticipants?: boolean;
+  showWhoWonCTA?: boolean;
+  showEngagementCTA?: boolean;
+  showPoweredBy?: boolean;
+  socialHandle?: string;
 }
 
 export interface DebateTurn {

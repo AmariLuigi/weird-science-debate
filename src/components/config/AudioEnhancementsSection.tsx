@@ -11,6 +11,7 @@ import {
   ArrowRightLeft,
 } from "lucide-react";
 import { useDebate } from "@/context/DebateContext";
+import { OutroCustomizationSection } from "./OutroCustomizationSection";
 
 export function AudioEnhancementsSection() {
   const { state, updateIntroOutroConfig } = useDebate();
@@ -311,6 +312,9 @@ export function AudioEnhancementsSection() {
             Short sound effect played when switching between speakers (optional)
           </p>
         </div>
+
+        {/* Outro Customization Section */}
+        {introOutroConfig.enableOutro && <OutroCustomizationSection />}
       </div>
     </div>
   );

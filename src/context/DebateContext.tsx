@@ -30,6 +30,11 @@ const defaultIntroOutroConfig: IntroOutroConfig = {
   outroMusicVolume: 0.3,
   transitionSoundVolume: 0.5,
   outroVideoUrl: "/HOST OUTRO.mov",
+  // Outro customization defaults
+  showParticipants: true,
+  showWhoWonCTA: true,
+  showEngagementCTA: true,
+  showPoweredBy: true,
 };
 
 const initialState: DebateState = {

@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Youtube, MessageSquare, ThumbsUp, Bell, Sparkles } from "lucide-react";
-import { Participant, Host } from "@/types/debate";
+import { Participant, Host, IntroOutroConfig } from "@/types/debate";
 import { Button } from "@/components/ui/Button";
 
 interface OutroSequenceProps {
@@ -14,6 +14,7 @@ interface OutroSequenceProps {
   outroMusicUrl?: string;
   outroMusicVolume?: number;
   outroVideoUrl?: string;
+  outroConfig?: IntroOutroConfig;
 }
 
 export function OutroSequence({
@@ -23,6 +24,7 @@ export function OutroSequence({
   onReplay,
   onBackToSetup,
   outroVideoUrl,
+  outroConfig,
 }: OutroSequenceProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoEnded, setVideoEnded] = useState(false);
@@ -137,170 +139,196 @@ export function OutroSequence({
           </motion.div>
         </motion.div>
       )}
+      {outroConfig?.outroHeadline && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
+          className="mb-8"
+        >
+          <h2 className="text-3xl md:text-4xl font-bold text-white bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-white">
+            {outroConfig.outroHeadline}
+          </h2>
+        </motion.div>
+      )}
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7 }}
-        className="mb-6"
-      >
-        <h3 className="text-lg text-slate-400 mb-4">Thank you to our participants</h3>
-        <div className="flex flex-wrap justify-center gap-3">
-          {participants.map((participant, index) => (
-            <motion.div
-              key={participant.id}
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.8 + index * 0.1 }}
-              className="flex flex-col items-center"
-            >
-              <div className="w-16 h-16 rounded-full border-2 border-primary/50 overflow-hidden mb-2 bg-gradient-to-br from-primary/20 to-brand-teal/20">
-                {participant.avatarUrl ? (
-                  <img
-                    src={participant.avatarUrl}
-                    alt={participant.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-xl font-bold text-white/80">
-                      {participant.name?.charAt(0)?.toUpperCase() || "?"}
-                    </span>
-                  </div>
-                )}
-              </div>
-              <span className="text-base text-white font-medium">
-                {participant.name || "Participant"}
-              </span>
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
+      {/* Participants Section */}
+      {(outroConfig?.showParticipants ?? true) && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+          className="mb-6"
+        >
+          <h3 className="text-lg text-slate-400 mb-4">
+            {outroConfig?.participantAckText || "Thank you to our participants"}
+          </h3>
+          <div className="flex flex-wrap justify-center gap-3">
+            {participants.map((participant, index) => (
+              <motion.div
+                key={participant.id}
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.8 + index * 0.1 }}
+                className="flex flex-col items-center"
+              >
+                <div className="w-16 h-16 rounded-full border-2 border-primary/50 overflow-hidden mb-2 bg-gradient-to-br from-primary/20 to-brand-teal/20">
+                  {participant.avatarUrl ? (
+                    <img
+                      src={participant.avatarUrl}
+                      alt={participant.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <span className="text-xl font-bold text-white/80">
+                        {participant.name?.charAt(0)?.toUpperCase() || "?"}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <span className="text-base text-white font-medium">
+                  {participant.name || "Participant"}
+                </span>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
       {/* Who Won Call to Action */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.9 }}
-        className="glass-panel p-5 mb-5"
-      >
-        <div className="flex items-center justify-center gap-2 mb-3">
-          <MessageSquare className="w-7 h-7 text-primary" />
-          <span className="text-2xl font-semibold text-white">
-            Who Won?
-          </span>
-        </div>
-        <p className="text-lg text-slate-400 mb-4">
-          Drop a comment and let us know which side made the stronger case!
-        </p>
-        <div className="flex flex-wrap justify-center gap-2">
-          {participants.map((participant) => (
-            <div
-              key={participant.id}
-              className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-primary/30 rounded-lg transition-all cursor-pointer"
-            >
-              <div className="w-6 h-6 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-brand-teal/20">
-                {participant.avatarUrl ? (
-                  <img
-                    src={participant.avatarUrl}
-                    alt={participant.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-sm font-bold text-white/80">
-                      {participant.name?.charAt(0)?.toUpperCase() || "?"}
-                    </span>
-                  </div>
-                )}
+      {(outroConfig?.showWhoWonCTA ?? true) && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.9 }}
+          className="glass-panel p-5 mb-5"
+        >
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <MessageSquare className="w-7 h-7 text-primary" />
+            <span className="text-2xl font-semibold text-white">
+              {outroConfig?.ctaHeadline || "Who Won?"}
+            </span>
+          </div>
+          <p className="text-lg text-slate-400 mb-4">
+            {outroConfig?.ctaSubtext || "Drop a comment and let us know which side made the stronger case!"}
+          </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {participants.map((participant) => (
+              <div
+                key={participant.id}
+                className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-primary/30 rounded-lg transition-all cursor-pointer"
+              >
+                <div className="w-6 h-6 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-brand-teal/20">
+                  {participant.avatarUrl ? (
+                    <img
+                      src={participant.avatarUrl}
+                      alt={participant.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <span className="text-sm font-bold text-white/80">
+                        {participant.name?.charAt(0)?.toUpperCase() || "?"}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <span className="text-lg text-white">{participant.name}</span>
               </div>
-              <span className="text-lg text-white">{participant.name}</span>
-            </div>
-          ))}
-        </div>
-      </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.1 }}
-        className="glass-panel p-5 mb-6"
-      >
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <Youtube className="w-7 h-7 text-red-500" />
-          <span className="text-xl font-semibold text-white">
-            Enjoyed this debate?
-          </span>
-        </div>
-        <div className="flex flex-wrap justify-center gap-4 text-lg">
-          <motion.div
-            className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-transparent"
-            animate={{
-              scale: [1, 1.05, 1],
-              borderColor: ["rgba(12, 242, 93, 0)", "rgba(12, 242, 93, 0.5)", "rgba(12, 242, 93, 0)"],
-              boxShadow: ["0 0 0px rgba(12, 242, 93, 0)", "0 0 15px rgba(12, 242, 93, 0.3)", "0 0 0px rgba(12, 242, 93, 0)"],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              delay: 1.5,
-              ease: "easeInOut",
-            }}
-          >
-            <ThumbsUp className="w-5 h-5 text-primary" />
-            <span className="text-slate-300">Like</span>
-          </motion.div>
-          <motion.div
-            className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-transparent"
-            animate={{
-              scale: [1, 1.05, 1],
-              borderColor: ["rgba(239, 68, 68, 0)", "rgba(239, 68, 68, 0.5)", "rgba(239, 68, 68, 0)"],
-              boxShadow: ["0 0 0px rgba(239, 68, 68, 0)", "0 0 15px rgba(239, 68, 68, 0.3)", "0 0 0px rgba(239, 68, 68, 0)"],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              delay: 2,
-              ease: "easeInOut",
-            }}
-          >
-            <Bell className="w-5 h-5 text-red-500" />
-            <span className="text-slate-300">Subscribe</span>
-          </motion.div>
-          <motion.div
-            className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-transparent"
-            animate={{
-              scale: [1, 1.05, 1],
-              borderColor: ["rgba(12, 242, 93, 0)", "rgba(12, 242, 93, 0.5)", "rgba(12, 242, 93, 0)"],
-              boxShadow: ["0 0 0px rgba(12, 242, 93, 0)", "0 0 15px rgba(12, 242, 93, 0.3)", "0 0 0px rgba(12, 242, 93, 0)"],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              delay: 2.5,
-              ease: "easeInOut",
-            }}
-          >
-            <MessageSquare className="w-5 h-5 text-primary" />
-            <span className="text-slate-300">Comment</span>
-          </motion.div>
-        </div>
-      </motion.div>
+      {/* Engagement CTA */}
+      {(outroConfig?.showEngagementCTA ?? true) && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.1 }}
+          className="glass-panel p-5 mb-6"
+        >
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Youtube className="w-7 h-7 text-red-500" />
+            <span className="text-xl font-semibold text-white">
+              Enjoyed this debate?
+            </span>
+            {outroConfig?.socialHandle && (
+              <span className="text-slate-400 text-lg ml-2">@{outroConfig.socialHandle}</span>
+            )}
+          </div>
+          <div className="flex flex-wrap justify-center gap-4 text-lg">
+            <motion.div
+              className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-transparent"
+              animate={{
+                scale: [1, 1.05, 1],
+                borderColor: ["rgba(12, 242, 93, 0)", "rgba(12, 242, 93, 0.5)", "rgba(12, 242, 93, 0)"],
+                boxShadow: ["0 0 0px rgba(12, 242, 93, 0)", "0 0 15px rgba(12, 242, 93, 0.3)", "0 0 0px rgba(12, 242, 93, 0)"],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                delay: 1.5,
+                ease: "easeInOut",
+              }}
+            >
+              <ThumbsUp className="w-5 h-5 text-primary" />
+              <span className="text-slate-300">Like</span>
+            </motion.div>
+            <motion.div
+              className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-transparent"
+              animate={{
+                scale: [1, 1.05, 1],
+                borderColor: ["rgba(239, 68, 68, 0)", "rgba(239, 68, 68, 0.5)", "rgba(239, 68, 68, 0)"],
+                boxShadow: ["0 0 0px rgba(239, 68, 68, 0)", "0 0 15px rgba(239, 68, 68, 0.3)", "0 0 0px rgba(239, 68, 68, 0)"],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                delay: 2,
+                ease: "easeInOut",
+              }}
+            >
+              <Bell className="w-5 h-5 text-red-500" />
+              <span className="text-slate-300">Subscribe</span>
+            </motion.div>
+            <motion.div
+              className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-transparent"
+              animate={{
+                scale: [1, 1.05, 1],
+                borderColor: ["rgba(12, 242, 93, 0)", "rgba(12, 242, 93, 0.5)", "rgba(12, 242, 93, 0)"],
+                boxShadow: ["0 0 0px rgba(12, 242, 93, 0)", "0 0 15px rgba(12, 242, 93, 0.3)", "0 0 0px rgba(12, 242, 93, 0)"],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                delay: 2.5,
+                ease: "easeInOut",
+              }}
+            >
+              <MessageSquare className="w-5 h-5 text-primary" />
+              <span className="text-slate-300">Comment</span>
+            </motion.div>
+          </div>
+        </motion.div>
+      )}
 
-
-
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.6 }}
-        className="mt-6 flex items-center justify-center gap-2 text-slate-500"
-      >
-        <Sparkles className="w-3 h-3 text-brand-sea" />
-        <span className="text-xs">Powered by Weird Science</span>
-        <Sparkles className="w-3 h-3 text-brand-sea" />
-      </motion.div>
+      {/* Powered By Footer */}
+      {(outroConfig?.showPoweredBy ?? true) && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.6 }}
+          className="mt-6 flex items-center justify-center gap-2 text-slate-500"
+        >
+          <Sparkles className="w-3 h-3 text-brand-sea" />
+          <span className="text-xs">Powered by Weird Science</span>
+          <Sparkles className="w-3 h-3 text-brand-sea" />
+        </motion.div>
+      )}
     </>
-  ), [title, participantTurns, participants, outroVideoUrl, onReplay, onBackToSetup]);
+  ), [title, participantTurns, participants, outroVideoUrl, onReplay, onBackToSetup, outroConfig]);
 
   // Video section - memoized to prevent video remounting
   // Note: we keep video states out of deps so the video element isn't recreated
