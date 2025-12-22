@@ -1,4 +1,4 @@
-import { useState, useCallback, forwardRef } from "react";
+import { useState, useCallback, forwardRef, useRef, useEffect } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
@@ -16,6 +16,9 @@ import {
   AlertTriangle,
   ThumbsUp,
   ThumbsDown,
+  Play,
+  Pause,
+  Volume2,
 } from "lucide-react";
 import { DebateTurn, AudioTrack, TurnType, TURN_TYPE_CONFIGS, ParticipantDecision } from "@/types/debate";
 import { useDebate } from "@/context/DebateContext";
@@ -47,6 +50,102 @@ interface TrackConversionState {
   isConverting: boolean;
   progress: ConversionProgress | null;
   wasConverted: boolean;
+}
+
+// Audio Preview Player Component
+interface AudioPreviewPlayerProps {
+  audioUrl: string;
+  speed: number;
+}
+
+function AudioPreviewPlayer({ audioUrl, speed }: AudioPreviewPlayerProps) {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  // Update playback rate when speed changes
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.playbackRate = speed;
+    }
+  }, [speed]);
+
+  const handlePlayPause = useCallback(() => {
+    if (!audioRef.current) {
+      // Create audio element on first play
+      audioRef.current = new Audio(audioUrl);
+      audioRef.current.playbackRate = speed;
+
+      audioRef.current.addEventListener('ended', () => {
+        setIsPlaying(false);
+        setProgress(0);
+      });
+
+      audioRef.current.addEventListener('timeupdate', () => {
+        if (audioRef.current) {
+          const prog = (audioRef.current.currentTime / audioRef.current.duration) * 100;
+          setProgress(isNaN(prog) ? 0 : prog);
+        }
+      });
+    }
+
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current.play();
+      setIsPlaying(true);
+    }
+  }, [audioUrl, speed, isPlaying]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
+  // Reset audio when URL changes
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+      setIsPlaying(false);
+      setProgress(0);
+    }
+  }, [audioUrl]);
+
+  return (
+    <div className="flex items-center gap-2">
+      <button
+        type="button"
+        onClick={handlePlayPause}
+        className={cn(
+          "w-8 h-8 rounded-full flex items-center justify-center transition-all",
+          isPlaying
+            ? "bg-primary text-black hover:bg-primary/90"
+            : "bg-slate-700 text-white hover:bg-slate-600"
+        )}
+      >
+        {isPlaying ? (
+          <Pause className="w-4 h-4" />
+        ) : (
+          <Play className="w-4 h-4 ml-0.5" />
+        )}
+      </button>
+
+      {/* Progress bar */}
+      <div className="w-16 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+        <div
+          className="h-full bg-primary transition-all"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+    </div>
+  );
 }
 
 export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
@@ -579,6 +678,52 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
               )}
             </div>
 
+            {/* Audio Speed & Preview - Common for all turns */}
+            {(() => {
+              // Get first available audio URL for preview
+              const previewAudioUrl = turn.audioUrl || turn.audioTracks?.[0]?.audioUrl;
+
+              return (
+                <div className="flex items-center gap-4 py-2 px-3 bg-slate-800/30 rounded-lg">
+                  {/* Speed Slider */}
+                  <div className="flex items-center gap-2 flex-1">
+                    <Volume2 className="w-4 h-4 text-slate-400" />
+                    <span className="text-xs text-slate-400 whitespace-nowrap">Speed:</span>
+                    <input
+                      type="range"
+                      min="0.5"
+                      max="2"
+                      step="0.1"
+                      value={turn.audioSpeed || 1}
+                      onChange={(e) => updateTurn(turn.id, { audioSpeed: parseFloat(e.target.value) })}
+                      className="flex-1 h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-primary max-w-[100px]"
+                      style={{
+                        background: `linear-gradient(to right, rgb(12, 242, 93) 0%, rgb(12, 242, 93) ${((turn.audioSpeed || 1) - 0.5) / 1.5 * 100}%, rgb(51, 65, 85) ${((turn.audioSpeed || 1) - 0.5) / 1.5 * 100}%, rgb(51, 65, 85) 100%)`
+                      }}
+                    />
+                    <span className={cn(
+                      "text-xs font-medium min-w-[36px] text-center px-1.5 py-0.5 rounded",
+                      (turn.audioSpeed || 1) === 1
+                        ? "text-slate-400"
+                        : (turn.audioSpeed || 1) > 1
+                          ? "text-orange-400 bg-orange-500/10"
+                          : "text-blue-400 bg-blue-500/10"
+                    )}>
+                      {(turn.audioSpeed || 1).toFixed(1)}x
+                    </span>
+                  </div>
+
+                  {/* Preview Player */}
+                  {previewAudioUrl && (
+                    <AudioPreviewPlayer
+                      audioUrl={previewAudioUrl}
+                      speed={turn.audioSpeed || 1}
+                    />
+                  )}
+                </div>
+              );
+            })()}
+
             {/* Host Turn Layout - Video primary, Audio optional */}
             {turn.isHostTurn ? (
               <div className="space-y-3">
@@ -925,16 +1070,18 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
                 </div>
 
                 {/* Additional Audio Tracks for Participant */}
-                {turn.audioTracks && turn.audioTracks.length > 0 && (
-                  <div className="space-y-2">
-                    <div className="text-xs text-slate-400 uppercase tracking-wider">
-                      Additional Audio Tracks
+                {
+                  turn.audioTracks && turn.audioTracks.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="text-xs text-slate-400 uppercase tracking-wider">
+                        Additional Audio Tracks
+                      </div>
+                      {turn.audioTracks.map((track, trackIndex) =>
+                        renderAudioTrack(track, trackIndex),
+                      )}
                     </div>
-                    {turn.audioTracks.map((track, trackIndex) =>
-                      renderAudioTrack(track, trackIndex),
-                    )}
-                  </div>
-                )}
+                  )
+                }
 
                 {/* Add Audio Track Button for Participant */}
                 <button

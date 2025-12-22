@@ -273,6 +273,7 @@ export function BroadcastView() {
     play,
     pause,
     stop,
+    setPlaybackRate,
     analyserNode,
     initialize,
     audioElement,
@@ -471,6 +472,11 @@ export function BroadcastView() {
     // Load the audio
     loadAudio(audioUrl);
 
+    // Set playback rate from turn settings
+    const speed = currentTurn?.audioSpeed || 1.0;
+    setPlaybackRate(speed);
+    console.log("[BroadcastView] Set audio speed:", speed);
+
     // Play if we're supposed to be playing
     if (state.isPlaying) {
       // Give a moment for the audio to load
@@ -482,9 +488,11 @@ export function BroadcastView() {
     }
   }, [
     currentTurn?.id,
+    currentTurn?.audioSpeed,
     currentAudioIndex,
     currentAudioData?.url,
     loadAudio,
+    setPlaybackRate,
     play,
     state.isPlaying,
     state.currentTurnIndex,

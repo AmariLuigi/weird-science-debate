@@ -241,6 +241,16 @@ export function useAudioEngine(options: UseAudioEngineOptions = {}) {
     }
   }, []);
 
+  // Set playback rate (speed)
+  const setPlaybackRate = useCallback((rate: number) => {
+    if (globalAudio) {
+      // Clamp rate between 0.5 and 2.0
+      const clampedRate = Math.max(0.5, Math.min(2.0, rate));
+      console.log("[AudioEngine] Setting playback rate:", clampedRate);
+      globalAudio.playbackRate = clampedRate;
+    }
+  }, []);
+
   // Update state periodically when playing
   useEffect(() => {
     if (!globalAudio) return;
@@ -272,6 +282,7 @@ export function useAudioEngine(options: UseAudioEngineOptions = {}) {
     pause,
     stop,
     seek,
+    setPlaybackRate,
     initialize,
     analyserNode: globalAnalyser,
     audioElement: globalAudio,

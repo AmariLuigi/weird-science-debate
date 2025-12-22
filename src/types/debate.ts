@@ -228,6 +228,7 @@ export interface DebateTurn {
   audioFile?: File;
   audioUrl?: string;
   audioTracks?: AudioTrack[];
+  audioSpeed?: number; // Playback speed multiplier (0.5 to 2.0, default 1.0)
   videoFile?: File;
   videoUrl?: string;
   subtitleFile?: File;
