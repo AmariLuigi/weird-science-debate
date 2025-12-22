@@ -52,7 +52,7 @@ function TypewriterText({
         <motion.span
           className="inline-block w-0.5 h-[1.2em] bg-primary ml-0.5 align-middle"
           animate={{ opacity: [1, 0, 1] }}
-          transition={{ duration: 0.8, repeat: Infinity, ease: "steps(2)" }}
+          transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
         />
       )}
     </span>
@@ -201,10 +201,10 @@ function ParticipantSubtitle({ text }: { text: string }) {
           borderColor: isTypingComplete
             ? "rgba(12, 242, 93, 0.3)"
             : [
-                "rgba(12, 242, 93, 0.3)",
-                "rgba(12, 242, 93, 0.6)",
-                "rgba(12, 242, 93, 0.3)",
-              ],
+              "rgba(12, 242, 93, 0.3)",
+              "rgba(12, 242, 93, 0.6)",
+              "rgba(12, 242, 93, 0.3)",
+            ],
         }}
         transition={{
           duration: 1,

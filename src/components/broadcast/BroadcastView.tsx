@@ -128,17 +128,6 @@ export function BroadcastView() {
   const hasAudioTracks = audioData.length > 0;
   const isVideoTurn = isHostTurn && !!currentTurn?.videoUrl && !hasAudioTracks;
 
-  // Debug: Log turn detection
-  console.log("[BroadcastView] Turn detection:", {
-    turnIndex: state.currentTurnIndex,
-    isHostTurn,
-    hasVideoUrl: !!currentTurn?.videoUrl,
-    hasAudioTracks,
-    audioDataLength: audioData.length,
-    isVideoTurn,
-    turnTitle: currentTurn?.title,
-  });
-
   // Get topic image from Question Group (Shorts mode)
   const currentGroup = currentTurn ? getGroupForTurn(currentTurn.id) : undefined;
   const topicImageUrl = currentGroup?.imageUrl;
