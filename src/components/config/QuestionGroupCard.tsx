@@ -81,6 +81,8 @@ export const QuestionGroupCard = forwardRef<HTMLDivElement, QuestionGroupCardPro
                 if (file) {
                     updateQuestionGroup(group.id, { imageFile: file });
                 }
+                // Reset input to allow re-uploading same file
+                e.target.value = "";
             },
             [group.id, updateQuestionGroup],
         );
@@ -95,6 +97,8 @@ export const QuestionGroupCard = forwardRef<HTMLDivElement, QuestionGroupCardPro
                 if (file) {
                     updateQuestionGroup(group.id, { positiveVideoFile: file });
                 }
+                // Reset input to allow re-uploading same file
+                e.target.value = "";
             },
             [group.id, updateQuestionGroup],
         );
@@ -109,6 +113,8 @@ export const QuestionGroupCard = forwardRef<HTMLDivElement, QuestionGroupCardPro
                 if (file) {
                     updateQuestionGroup(group.id, { negativeVideoFile: file });
                 }
+                // Reset input to allow re-uploading same file
+                e.target.value = "";
             },
             [group.id, updateQuestionGroup],
         );

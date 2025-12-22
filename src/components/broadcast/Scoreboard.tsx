@@ -109,6 +109,11 @@ export function Scoreboard({ questionGroups, turns, participants, currentTurnInd
                     positive: currentTurn.decision === 'positive' ? prev.positive + 1 : prev.positive,
                     negative: currentTurn.decision === 'negative' ? prev.negative + 1 : prev.negative,
                 }));
+
+                // Play pop sound effect
+                const popSound = new Audio('/audio effects/pop score.wav');
+                popSound.volume = 0.5;
+                popSound.play().catch(err => console.warn('[Scoreboard] Could not play pop sound:', err));
             }, 800);
 
             // Clear flying avatar

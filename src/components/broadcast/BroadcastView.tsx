@@ -171,6 +171,11 @@ export function BroadcastView() {
   // Helper to move to next turn or finish
   const moveToNextTurnOrFinish = useCallback(() => {
     if (state.currentTurnIndex < orderedTurns.length - 1) {
+      // Play swoosh transition sound
+      const swooshSound = new Audio('/audio effects/swoosh turn.wav');
+      swooshSound.volume = 0.4;
+      swooshSound.play().catch(err => console.warn('[BroadcastView] Could not play swoosh sound:', err));
+
       if (introOutroConfig.transitionSoundUrl) {
         backgroundAudio.playTransitionSound(
           introOutroConfig.transitionSoundUrl,

@@ -192,7 +192,7 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
 
           // Handle audio URL creation/cleanup
           let newAudioUrl = t.audioUrl;
-          if (updates.audioFile !== undefined) {
+          if ('audioFile' in updates) {
             // Revoke old URL if exists
             if (t.audioUrl) {
               URL.revokeObjectURL(t.audioUrl);
@@ -205,7 +205,7 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
 
           // Handle video URL creation/cleanup
           let newVideoUrl = t.videoUrl;
-          if (updates.videoFile !== undefined) {
+          if ('videoFile' in updates) {
             // Revoke old URL if exists
             if (t.videoUrl) {
               URL.revokeObjectURL(t.videoUrl);
@@ -220,9 +220,9 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
             ...t,
             ...updates,
             audioUrl:
-              updates.audioFile !== undefined ? newAudioUrl : t.audioUrl,
+              'audioFile' in updates ? newAudioUrl : t.audioUrl,
             videoUrl:
-              updates.videoFile !== undefined ? newVideoUrl : t.videoUrl,
+              'videoFile' in updates ? newVideoUrl : t.videoUrl,
           };
         }),
       }));
@@ -435,7 +435,7 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
     (updates: Partial<IntroOutroConfig>) => {
       setState((prev) => {
         let newIntroMusicUrl = prev.introOutroConfig.introMusicUrl;
-        if (updates.introMusicFile !== undefined) {
+        if ('introMusicFile' in updates) {
           if (prev.introOutroConfig.introMusicUrl) {
             URL.revokeObjectURL(prev.introOutroConfig.introMusicUrl);
           }
@@ -445,7 +445,7 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
         }
 
         let newOutroMusicUrl = prev.introOutroConfig.outroMusicUrl;
-        if (updates.outroMusicFile !== undefined) {
+        if ('outroMusicFile' in updates) {
           if (prev.introOutroConfig.outroMusicUrl) {
             URL.revokeObjectURL(prev.introOutroConfig.outroMusicUrl);
           }
@@ -455,7 +455,7 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
         }
 
         let newTransitionSoundUrl = prev.introOutroConfig.transitionSoundUrl;
-        if (updates.transitionSoundFile !== undefined) {
+        if ('transitionSoundFile' in updates) {
           if (prev.introOutroConfig.transitionSoundUrl) {
             URL.revokeObjectURL(prev.introOutroConfig.transitionSoundUrl);
           }
@@ -465,7 +465,7 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
         }
 
         let newOutroVideoUrl = prev.introOutroConfig.outroVideoUrl;
-        if (updates.outroVideoFile !== undefined) {
+        if ('outroVideoFile' in updates) {
           if (prev.introOutroConfig.outroVideoUrl) {
             URL.revokeObjectURL(prev.introOutroConfig.outroVideoUrl);
           }
@@ -480,19 +480,19 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
             ...prev.introOutroConfig,
             ...updates,
             introMusicUrl:
-              updates.introMusicFile !== undefined
+              'introMusicFile' in updates
                 ? newIntroMusicUrl
                 : prev.introOutroConfig.introMusicUrl,
             outroMusicUrl:
-              updates.outroMusicFile !== undefined
+              'outroMusicFile' in updates
                 ? newOutroMusicUrl
                 : prev.introOutroConfig.outroMusicUrl,
             outroVideoUrl:
-              updates.outroVideoFile !== undefined
+              'outroVideoFile' in updates
                 ? newOutroVideoUrl
                 : prev.introOutroConfig.outroVideoUrl,
             transitionSoundUrl:
-              updates.transitionSoundFile !== undefined
+              'transitionSoundFile' in updates
                 ? newTransitionSoundUrl
                 : prev.introOutroConfig.transitionSoundUrl,
           },
@@ -532,7 +532,7 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
 
           // Handle image URL creation/cleanup
           let newImageUrl = g.imageUrl;
-          if (updates.imageFile !== undefined) {
+          if ('imageFile' in updates) {
             if (g.imageUrl) {
               URL.revokeObjectURL(g.imageUrl);
             }
@@ -543,7 +543,7 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
 
           // Handle positive video URL creation/cleanup
           let newPositiveVideoUrl = g.positiveVideoUrl;
-          if (updates.positiveVideoFile !== undefined) {
+          if ('positiveVideoFile' in updates) {
             if (g.positiveVideoUrl) {
               URL.revokeObjectURL(g.positiveVideoUrl);
             }
@@ -554,7 +554,7 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
 
           // Handle negative video URL creation/cleanup
           let newNegativeVideoUrl = g.negativeVideoUrl;
-          if (updates.negativeVideoFile !== undefined) {
+          if ('negativeVideoFile' in updates) {
             if (g.negativeVideoUrl) {
               URL.revokeObjectURL(g.negativeVideoUrl);
             }
@@ -567,11 +567,11 @@ export function DebateProvider({ children }: { children: React.ReactNode }) {
             ...g,
             ...updates,
             imageUrl:
-              updates.imageFile !== undefined ? newImageUrl : g.imageUrl,
+              'imageFile' in updates ? newImageUrl : g.imageUrl,
             positiveVideoUrl:
-              updates.positiveVideoFile !== undefined ? newPositiveVideoUrl : g.positiveVideoUrl,
+              'positiveVideoFile' in updates ? newPositiveVideoUrl : g.positiveVideoUrl,
             negativeVideoUrl:
-              updates.negativeVideoFile !== undefined ? newNegativeVideoUrl : g.negativeVideoUrl,
+              'negativeVideoFile' in updates ? newNegativeVideoUrl : g.negativeVideoUrl,
           };
         }),
       }));

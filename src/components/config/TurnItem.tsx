@@ -336,6 +336,8 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
           const duration = await getVideoDuration(file);
           updateTurn(turn.id, { videoFile: file, duration });
         }
+        // Reset input to allow re-uploading same file
+        e.target.value = "";
       },
       [turn.id, updateTurn],
     );
@@ -347,6 +349,9 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
     const handleSrtChange = useCallback(
       async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
+        // Reset input to allow re-uploading same file
+        e.target.value = "";
+
         if (!file) return;
 
         setSrtError(null);
@@ -383,6 +388,9 @@ export const TurnItem = forwardRef<HTMLDivElement, TurnItemProps>(
     const handleTrackSrtChange = useCallback(
       async (trackId: string, e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
+        // Reset input to allow re-uploading same file
+        e.target.value = "";
+
         if (!file) return;
 
         try {

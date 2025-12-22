@@ -24,6 +24,9 @@ export function AudioEnhancementsSection() {
     e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = e.target.files?.[0];
+    // Reset input to allow re-uploading same file
+    e.target.value = "";
+
     if (file) {
       if (type === "introMusic") {
         updateIntroOutroConfig({ introMusicFile: file });
@@ -278,6 +281,8 @@ export function AudioEnhancementsSection() {
                     accept="video/*"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
+                      // Reset input to allow re-uploading same file
+                      e.target.value = "";
                       if (file) {
                         updateIntroOutroConfig({ outroVideoFile: file });
                       }
