@@ -15,6 +15,7 @@ interface ActiveSpeakerViewProps {
   currentSubtitle: SubtitleCue | null;
   isPlaying: boolean;
   currentTurnVideoUrl?: string;
+  videoPlaybackSpeed?: number; // Playback speed for video (0.5 to 2.0)
   onVideoEnded?: () => void;
   onVideoTimeUpdate?: (currentTime: number, duration: number) => void;
   debugLayout?: boolean;
@@ -36,6 +37,7 @@ export function ActiveSpeakerView({
   currentSubtitle,
   isPlaying,
   currentTurnVideoUrl,
+  videoPlaybackSpeed = 1,
   onVideoEnded,
   onVideoTimeUpdate,
   debugLayout = false,
@@ -302,6 +304,7 @@ export function ActiveSpeakerView({
                         videoUrl={currentTurnVideoUrl!}
                         isActive={isPlaying}
                         isPlaying={isPlaying}
+                        playbackSpeed={videoPlaybackSpeed}
                         size={280}
                         onEnded={onVideoEnded}
                         onTimeUpdate={onVideoTimeUpdate}
@@ -422,6 +425,7 @@ export function ActiveSpeakerView({
                       videoUrl={currentTurnVideoUrl!}
                       isActive={isPlaying}
                       isPlaying={isPlaying}
+                      playbackSpeed={videoPlaybackSpeed}
                       size={VISUALIZER_SIZE}
                       onEnded={onVideoEnded}
                       onTimeUpdate={onVideoTimeUpdate}

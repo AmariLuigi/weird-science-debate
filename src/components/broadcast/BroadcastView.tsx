@@ -793,6 +793,7 @@ export function BroadcastView() {
                 currentSubtitle={isPlayingDecisionVideo ? null : currentSubtitle}
                 isPlaying={state.isPlaying}
                 currentTurnVideoUrl={currentTurn?.videoUrl}
+                videoPlaybackSpeed={currentTurn?.audioSpeed || 1}
                 onVideoEnded={handleAudioEnded}
                 onVideoTimeUpdate={handleVideoTimeUpdate}
                 isShorts={isShorts}

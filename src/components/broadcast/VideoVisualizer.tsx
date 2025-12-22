@@ -8,6 +8,7 @@ interface VideoVisualizerProps {
   className?: string;
   color?: "mint" | "teal";
   isPlaying: boolean;
+  playbackSpeed?: number; // Playback rate (0.5 to 2.0, default 1.0)
   onEnded?: () => void;
   onTimeUpdate?: (currentTime: number, duration: number) => void;
 }
@@ -19,6 +20,7 @@ export function VideoVisualizer({
   className,
   color = "teal",
   isPlaying,
+  playbackSpeed = 1,
   onEnded,
   onTimeUpdate,
 }: VideoVisualizerProps) {
@@ -113,13 +115,16 @@ export function VideoVisualizer({
         audioContextRef.current.resume();
       }
 
+      // Set playback speed before playing
+      video.playbackRate = playbackSpeed;
+
       video.play().catch((err) => {
         console.warn("[VideoVisualizer] Failed to play video:", err);
       });
     } else {
       video.pause();
     }
-  }, [isPlaying, isActive]);
+  }, [isPlaying, isActive, playbackSpeed]);
 
   // Reset video when it becomes active
   useEffect(() => {
